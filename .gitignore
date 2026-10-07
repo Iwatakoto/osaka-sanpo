@@ -1,0 +1,6 @@
+# 公開しないもの
+private/
+HANDOFF.md
+CLAUDE.md
+.claude/
+node_modules/
