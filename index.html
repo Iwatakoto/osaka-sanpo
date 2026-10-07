@@ -297,9 +297,10 @@ p { margin: 0; }
   display: grid; place-items: center; font-size: .9rem; line-height: 1; color: #fff; background: var(--c); border: 2px solid #fff;
 }
 .slot.stamped:not(.has-photo) .ring.face { border-style: solid; background-color: #fff; }
-.slot.has-photo > .ring.face { background-image: none !important; background-color: var(--c); }
-.slot.has-photo > .ring.face .num { position: static; width: auto; height: auto; border: 0; background: none; font-size: inherit; }
-@media screen { .slot .ring { width: 96px; height: 96px; } .slot.has-photo > .ring { width: 34px; height: 34px; } }
+/* 写真カードでも、左上の丸にスタンプの絵を残す（番号は右下の小さなバッジ） */
+.slot.has-photo > .ring.face { background-color: #fff; }
+.slot.has-photo > .ring.face .num { right: -5px; bottom: -5px; width: 20px; height: 20px; font-size: .72rem; }
+@media screen { .slot .ring { width: 96px; height: 96px; } .slot.has-photo > .ring { width: 54px; height: 54px; } }
 /* 表紙のイラスト（ファンキットの壁紙。右下の著作権表示を切らずに全体を見せる） */
 .cover-art { width: min(100%, 560px); height: auto; aspect-ratio: 16 / 9; border-radius: .8rem; border: 3px solid #fff; box-shadow: 0 6px 14px rgba(38, 54, 79, .18); margin: 4px 0 -2px; }
 .medal img { width: 64px; height: 64px; vertical-align: middle; margin-right: 6px; }
@@ -353,14 +354,29 @@ p { margin: 0; }
 .slot::before { z-index: 2; }
 .slot.has-photo { justify-content: flex-end; gap: 2px; padding: 10px 8px; border-width: 3px; }
 .slot.has-photo > .ring {
-  position: absolute; top: 12px; left: 8px; width: 34px; height: 34px; font-size: 1.05rem;
-  border: 2px solid #fff; background: var(--c); color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.3);
+  position: absolute; top: 10px; left: 8px; width: 54px; height: 54px; font-size: 1.05rem;
+  border: 3px solid #fff; background-color: #fff; color: transparent; box-shadow: 0 0 0 2px var(--c), 0 2px 6px rgba(0,0,0,.3);
 }
-.slot.has-photo.stamped > .ring::after { top: -6px; right: auto; left: 26px; }
+.slot.has-photo.stamped > .ring::after { top: -4px; right: auto; left: 44px; }
 .slot.has-photo > .no { display: none; }   /* 写真を撮ったら、予定時刻のかわりに下の撮影時刻を見せる */
 .slot.has-photo > .name { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.7); font-size: .82rem; }
 .slot.has-photo > .meta { color: rgba(255,255,255,.92); text-shadow: 0 1px 2px rgba(0,0,0,.6); }
-.slot.has-photo.stamped .ring { animation: none; }
+/* スタンプを獲得した枠だけ、スタンプの絵がふりふり震える（獲得前は動かない。枠ごとに少しずらす）。写真のない枠は光る動きと重ねる */
+.slot.stamped > .ring.face { transform-origin: 50% 85%; animation: stamp-wiggle 2.6s ease-in-out infinite; animation-delay: var(--delay, 0s); }
+.slot.stamped:not(.has-photo) > .ring.face { animation: stamp-wiggle 2.6s ease-in-out infinite, glow 5s ease-in-out infinite; animation-delay: var(--delay, 0s), var(--delay, 0s); }
+/* コンプリートのスタンプも同じ動き */
+.medal img { transform-origin: 50% 85%; animation: stamp-wiggle 2.6s ease-in-out infinite; }
+@keyframes stamp-wiggle {
+  0%, 52%, 100% { transform: rotate(0deg) scale(1); }
+  56% { transform: rotate(-14deg) scale(1.08); }
+  61% { transform: rotate(12deg) scale(1.08); }
+  66% { transform: rotate(-10deg) scale(1.06); }
+  71% { transform: rotate(8deg) scale(1.04); }
+  76% { transform: rotate(-4deg) scale(1.02); }
+  81% { transform: rotate(0deg) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) { .slot > .ring.face, .medal img { animation: none !important; } }
+@media print { .slot > .ring.face, .medal img { animation: none !important; } }
 .slot.has-photo.stamped { box-shadow: 0 0 0 2px #fff inset; }
 @keyframes pop { from { transform: rotate(12deg) scale(1.6); opacity: 0; } to { transform: rotate(12deg) scale(1); opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
