@@ -1,6 +1,6 @@
 // 大阪さんぽのしおり：オフラインでも開けるようにするための Service Worker
 // index.html などを更新したら CACHE の番号を上げる
-const CACHE = 'osaka-sanpo-v19';
+const CACHE = 'osaka-sanpo-v20';
 const ASSETS = [
   './',
   './index.html',
@@ -8,7 +8,17 @@ const ASSETS = [
   './favicon-32.png',
   './icon-180.png',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './fankit/cover.jpg',
+  './fankit/stamp-1.png',
+  './fankit/stamp-2.png',
+  './fankit/stamp-3.png',
+  './fankit/stamp-4.png',
+  './fankit/stamp-5.png',
+  './fankit/stamp-6.png',
+  './fankit/stamp-7.png',
+  './fankit/stamp-8.png',
+  './fankit/stamp-complete.png'
 ];
 
 self.addEventListener('install', (e) => {
