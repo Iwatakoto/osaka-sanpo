@@ -230,13 +230,16 @@ p { margin: 0; }
   -webkit-tap-highlight-color: transparent;
 }
 .tabbar svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; transform-origin: 50% 80%; }
-.tabbar button { transition: color .2s; }
+.tabbar button { transition: color .2s; isolation: isolate; }
+/* 選んでいるタブは、影付きの角丸のオレンジの面で示す（しおりのボタンと同じ雰囲気）。選ぶと面がぽんと広がる */
 .tabbar button::before {
-  content: ""; position: absolute; top: -3px; left: 24%; right: 24%; height: 4px; border-radius: 0 0 4px 4px; background: var(--orange);
-  transform: scaleX(0); transition: transform .25s cubic-bezier(.3, 1.4, .5, 1);
+  content: ""; position: absolute; inset: 5px 8px; z-index: -1; border-radius: 12px;
+  background: var(--orange); box-shadow: 0 3px 0 rgba(60, 67, 79, .35);
+  transform: scale(.6); opacity: 0;
+  transition: transform .25s cubic-bezier(.3, 1.4, .5, 1), opacity .15s;
 }
-.tabbar button[aria-selected="true"] { color: var(--orange); }
-.tabbar button[aria-selected="true"]::before { transform: scaleX(1); }
+.tabbar button[aria-selected="true"] { color: #fff; }
+.tabbar button[aria-selected="true"]::before { transform: scale(1); opacity: 1; }
 .tabbar button:active svg { transform: scale(.88); }
 .tabbar button.bump svg { animation: tab-bump .45s cubic-bezier(.3, 1.6, .5, 1); }
 @keyframes tab-bump {
