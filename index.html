@@ -965,8 +965,9 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
         openSheet(job.spot ? { spot: job.spot } : { id: rec.id });
       });
     }).catch(function () {
+      // 寄り道写真のときは、寄り道アルバムの下の警告だけを出す（チェックポイントの画面は開かない）
       document.getElementById('storage-warn').hidden = false;
-      alertInSheet('写真を保存できませんでした。プライベートブラウズがオフになっているか確認してください。');
+      if (job.spot) alertInSheet('写真を保存できませんでした。プライベートブラウズがオフになっているか確認してください。', { spot: job.spot });
     }).then(function () { showBusy(false); });
   }
 
@@ -1044,7 +1045,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
     MAP_DECO.forEach(function (d) {
       var src = document.querySelector('.cover .deco .' + d[0]);
       if (!src) return;
-      var vb = src.getAttribute('viewBox').split(/s+/).map(Number);
+      var vb = src.getAttribute('viewBox').split(/\s+/).map(Number);
       var g = el('g', { class: 'map-deco md-' + d[0].replace(/^d-/, '').replace(/[0-9]$/, '') + (d[0] === 'd-leaf2' ? ' md-leaf2' : '') }, layer);
       var sv = el('svg', { x: d[1], y: d[2], width: d[3], height: (d[3] * vb[3] / vb[2]).toFixed(1), viewBox: vb.join(' '), overflow: 'visible' }, g);
       sv.innerHTML = src.innerHTML;
@@ -1494,8 +1495,9 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
   }
   function closeSheet() { if (dlg.open) { if (dlg.close) dlg.close(); else dlg.removeAttribute('open'); } current = null; }
   function showBusy(on) { document.getElementById('dlg-busy').hidden = !on; }
-  function alertInSheet(msg) {
-    if (!dlg.open) openSheet(current || { spot: SPOTS[0].id });
+  function alertInSheet(msg, target) {
+    // 写真を撮ろうとしたチェックポイントの画面に出す（ほかの地点の画面を開かない）
+    if (!dlg.open || (current && current.spot !== target.spot)) openSheet(target);
     var actions = document.getElementById('dlg-actions');
     var p = document.createElement('p'); p.className = 'warn'; p.style.width = '100%'; p.textContent = msg;
     actions.insertBefore(p, actions.firstChild);

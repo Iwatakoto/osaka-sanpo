@@ -1,6 +1,6 @@
 // 大阪さんぽのしおり：オフラインでも開けるようにするための Service Worker
 // index.html などを更新したら CACHE の番号を上げる
-const CACHE = 'osaka-sanpo-v23';
+const CACHE = 'osaka-sanpo-v24';
 const ASSETS = [
   './',
   './index.html',
@@ -40,11 +40,20 @@ self.addEventListener('fetch', (e) => {
 
   // ページ本体：まずネットから最新を取り、だめならキャッシュ
   if (req.mode === 'navigate') {
+    // しおり本体（./ と ./index.html）だけを扱う。PDF など別のページを開いたときは、ブラウザに任せる
+    // （以前はどのページでも ./index.html として保存していたため、PDF を開くとオフライン用の本体が上書きされていた）
+    const url = new URL(req.url);
+    const scope = new URL(self.registration.scope);
+    const isShell = url.origin === scope.origin &&
+      (url.pathname === scope.pathname || url.pathname === scope.pathname + 'index.html');
+    if (!isShell) return;
     e.respondWith(
       fetch(req)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put('./index.html', copy));
+          if (res.ok) {
+            const copy = res.clone();
+            e.waitUntil(caches.open(CACHE).then((c) => c.put('./index.html', copy)));
+          }
           return res;
         })
         .catch(() => caches.match('./index.html'))
