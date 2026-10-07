@@ -431,6 +431,19 @@ p { margin: 0; }
 @keyframes bar-slosh { from { -webkit-mask-position: left center, right 0 top 0; mask-position: left center, right 0 top 0; } to { -webkit-mask-position: left center, right 0 top 24px; mask-position: left center, right 0 top 24px; } }
 .bar i { animation: bar-rainbow 3.5s linear infinite, bar-slosh 1.2s linear infinite; }
 .bar.full i { -webkit-mask: none; mask: none; }   /* 8こそろったら波を消して、管いっぱいに満たす */
+/* スタンプが増えて伸びきったら、管がぱっと光り、光の筋が走る */
+.bar.glow { animation: bar-glow 1.4s ease-out; }
+.bar.glow::after {
+  content: ""; position: absolute; top: -20%; bottom: -20%; left: -40%; width: 35%; z-index: 1; pointer-events: none;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,.95), transparent);
+  transform: skewX(-20deg); animation: bar-sweep .9s ease-out;
+}
+@keyframes bar-glow {
+  0%   { box-shadow: inset 0 2px 4px rgba(38,54,79,.15), 0 0 0 0 rgba(255,214,90,0); border-color: var(--border); }
+  30%  { box-shadow: inset 0 2px 4px rgba(38,54,79,.15), 0 0 14px 5px rgba(255,214,90,.9), 0 0 26px 10px rgba(79,198,245,.45); border-color: #ffd65a; transform: scale(1.04); }
+  100% { box-shadow: inset 0 2px 4px rgba(38,54,79,.15), 0 0 0 0 rgba(255,214,90,0); border-color: var(--border); transform: scale(1); }
+}
+@keyframes bar-sweep { from { left: -40%; } to { left: 120%; } }
 @media (prefers-reduced-motion: reduce) { .bar i, .bar i::after { animation: none; } .bar i { transition: none; } }
 .medal { font-weight: 700; }
 .medal strong { color: var(--orange); font-size: 1.15em; }
@@ -1194,11 +1207,10 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
       n.t.style.fill = stamped ? C.white : s.color;
       n.cam.style.display = rec ? '' : 'none';
     });
-    document.getElementById('bar').style.width = (nStamp / 8 * 100) + '%';
-    document.getElementById('bar').parentNode.classList.toggle('full', nStamp === 8);
-    document.getElementById('medal-msg').innerHTML = (nStamp === 8
-      ? '<img src="fankit/stamp-complete.png" alt=""><strong>コンプリート！</strong> アニメイト天王寺でメダルと交換しよう'
-      : 'メダルまで あと <strong>' + (8 - nStamp) + '</strong> こ') + '<span class="note">（写真 ' + nPhoto + '/8）</span>';
+    // スタンプが増えたときは、シートを閉じるまでバーを伸ばさない（閉じたときに見える所で伸ばす）
+    progress.photos = nPhoto;
+    if (dlg.open && nStamp > progress.shown) progress.pending = nStamp;
+    else { progress.pending = null; showProgress(nStamp, false); }
 
     var album = document.getElementById('album');
     var list = freePhotos();
@@ -1219,6 +1231,35 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
     document.getElementById('album-empty').hidden = list.length > 0;
     document.getElementById('save-all').disabled = Object.keys(photos).length === 0;
     renderMemories();
+  }
+
+  /* ---------- スタンプの進捗バー ---------- */
+  var progress = { shown: 0, pending: null, photos: 0 };
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function medalHtml(n) {
+    return (n === 8
+      ? '<img src="fankit/stamp-complete.png" alt=""><strong>コンプリート！</strong> アニメイト天王寺でメダルと交換しよう'
+      : 'メダルまで あと <strong>' + (8 - n) + '</strong> こ') + '<span class="note">（写真 ' + progress.photos + '/8）</span>';
+  }
+  // n こ分までバーを伸ばす。celebrate のときは、伸びきったあとに光らせる
+  function showProgress(n, celebrate) {
+    var fill = document.getElementById('bar'), bar = fill.parentNode;
+    progress.shown = n;
+    fill.style.width = (n / 8 * 100) + '%';
+    bar.classList.toggle('full', n === 8);
+    document.getElementById('medal-msg').innerHTML = medalHtml(n);
+    if (!celebrate || reduceMotion) return;
+    bar.classList.remove('glow');
+    setTimeout(function () { void bar.offsetWidth; bar.classList.add('glow'); }, 1000);   // 伸びる動き（1.1秒）の終わりごろ
+  }
+  // シートを閉じたとき：増えたスタンプの分を、バーが見える所までスクロールしてから伸ばす
+  function flushProgress() {
+    if (progress.pending === null) return;
+    var n = progress.pending; progress.pending = null;
+    var onStampTab = document.querySelector('.o-stamp').classList.contains('tab-on');
+    if (!onStampTab) { showProgress(n, false); return; }
+    document.querySelector('.progress').scrollIntoView({ block: 'center', behavior: reduceMotion ? 'auto' : 'smooth' });
+    setTimeout(function () { showProgress(n, true); }, reduceMotion ? 0 : 450);
   }
 
   /* ---------- おもいでマップ ---------- */
@@ -1538,7 +1579,11 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
     }));
     actions.appendChild(button('やめる', 'sub', function () { openSheet(current); }));
   }
-  function closeSheet() { if (dlg.open) { if (dlg.close) dlg.close(); else dlg.removeAttribute('open'); } current = null; }
+  function closeSheet() {
+    if (dlg.open) { if (dlg.close) dlg.close(); else { dlg.removeAttribute('open'); flushProgress(); } }
+    current = null;
+  }
+  dlg.addEventListener('close', flushProgress);   // ×ボタン・枠の外・戻る操作（Esc）のどれで閉じても
   function showBusy(on) { document.getElementById('dlg-busy').hidden = !on; }
   function alertInSheet(msg, target) {
     // 写真を撮ろうとしたチェックポイントの画面に出す（ほかの地点の画面を開かない）
