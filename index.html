@@ -1421,9 +1421,10 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
   var progress = { shown: 0, pending: null, photos: 0, newPhoto: null };
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function medalHtml(n) {
+    var photos = '<span class="note">（写真 ' + progress.photos + '/8）</span>';
     return '<span class="mt">' + (n === 8
-      ? '<img src="fankit/stamp-complete.png" alt=""><strong>任務完了！</strong> 報酬の記念メダルはアニメイト天王寺で'
-      : '報酬：記念メダルまで あと <strong>' + (8 - n) + '</strong> エリア') + '<span class="note">（写真 ' + progress.photos + '/8）</span></span>';
+      ? '<img src="fankit/stamp-complete.png" alt=""><strong>任務完了！</strong>' + photos + '<br>報酬の記念メダルはアニメイト天王寺で'
+      : '報酬：記念メダルまで あと <strong>' + (8 - n) + '</strong> エリア' + photos) + '</span>';
   }
   // n こ分までバーを伸ばす。celebrate のときは、伸びきったあとに光らせる
   function showProgress(n, celebrate) {
