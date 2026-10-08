@@ -1436,7 +1436,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
     if (!celebrate || reduceMotion) { msg.innerHTML = medalHtml(n); return; }
     bar.classList.remove('glow');
     setTimeout(function () { void bar.offsetWidth; bar.classList.add('glow'); }, 1000);   // 伸びる動き（1.1秒）の終わりごろ
-    setTimeout(function () { msg.innerHTML = medalHtml(n); }, 2400);                      // 光り終わった（1.4秒）あとで文を変える
+    setTimeout(function () { msg.innerHTML = medalHtml(n); }, 3300);                      // 光りとまわりの暗さが戻ったあと（閉じてから4.7秒め）に文を変える
   }
   // シートを閉じたとき：増えたスタンプの分を、バーが見える所までスクロールしてから伸ばす
   function flushProgress() {
