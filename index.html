@@ -471,6 +471,8 @@ p { margin: 0; }
 @keyframes bar-sweep { from { left: -40%; } to { left: 120%; } }
 @media (prefers-reduced-motion: reduce) { .bar i, .bar i::after { animation: none; } .bar i { transition: none; } }
 .medal { font-weight: 700; }
+/* 文が1行でも2行でも光る枠が変わらないよう、2行ぶんの高さを先に取っておく（中身は真ん中に置く） */
+.progress .medal { flex: 1 1 100%; min-height: 5.2em; display: flex; align-items: center; justify-content: center; text-align: center; margin: 0; }
 .medal strong { color: var(--orange); font-size: 1.15em; }
 
 /* ---------- 足あと・まとめ ---------- */
@@ -1419,9 +1421,9 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
   var progress = { shown: 0, pending: null, photos: 0, newPhoto: null };
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function medalHtml(n) {
-    return (n === 8
+    return '<span class="mt">' + (n === 8
       ? '<img src="fankit/stamp-complete.png" alt=""><strong>任務完了！</strong> 報酬の記念メダルはアニメイト天王寺で'
-      : '報酬：記念メダルまで あと <strong>' + (8 - n) + '</strong> エリア') + '<span class="note">（写真 ' + progress.photos + '/8）</span>';
+      : '報酬：記念メダルまで あと <strong>' + (8 - n) + '</strong> エリア') + '<span class="note">（写真 ' + progress.photos + '/8）</span></span>';
   }
   // n こ分までバーを伸ばす。celebrate のときは、伸びきったあとに光らせる
   function showProgress(n, celebrate) {
