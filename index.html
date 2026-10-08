@@ -1409,9 +1409,11 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
     fill.style.width = (n / 8 * 100) + '%';
     bar.classList.toggle('full', n === 8);
     var msg = document.getElementById('medal-msg');
-    if (!celebrate || reduceMotion) { msg.innerHTML = medalHtml(n); return; }
+    if (!celebrate || reduceMotion) { bar.classList.remove('glow'); msg.innerHTML = medalHtml(n); return; }
     bar.classList.remove('glow');
     setTimeout(function () { void bar.offsetWidth; bar.classList.add('glow'); }, 1000);   // 伸びる動き（1.1秒）の終わりごろ
+    // 光り終わったら外す（残すと、タブを開き直すたびに表示が切りかわって光り直すため）
+    setTimeout(function () { bar.classList.remove('glow'); }, 2600);
     setTimeout(function () { msg.innerHTML = medalHtml(n); }, 2800);                      // 光りが終わり、まわりの暗さが戻るころ（閉じてから4.2秒め）に文を変える
   }
   // シートを閉じたとき：増えたスタンプの分を、バーが見える所までスクロールしてから伸ばす
