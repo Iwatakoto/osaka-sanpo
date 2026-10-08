@@ -191,8 +191,6 @@ p { margin: 0; }
   box-shadow: 0 6px 0 var(--shadow);
 }
 .pill small { font-size: .75rem; font-weight: 500; opacity: .9; }
-.howto { background: var(--box); border-radius: .8rem; padding: .7rem 1rem; text-align: left; font-size: .84rem; width: min(100%, 560px); margin-top: 6px; }
-.howto b { color: var(--title); }
 
 /* ---------- 見出し ---------- */
 .head { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-bottom: 18px; text-align: center; }
@@ -312,7 +310,7 @@ p { margin: 0; }
 }
 .slot:hover { transform: translateY(-2px); }
 .slot:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
-.slot .no { font-size: .72rem; font-weight: 700; color: var(--c); }
+.slot .no { font-size: .9rem; font-weight: 700; color: var(--c); }
 /* ---------- ファンキットのスタンプ（写真を撮る前の丸に入れる） ---------- */
 /* --art-k はスタンプの絵の大きさの倍率（文字が丸からはみ出す絵だけ小さくする。SPOTS の art） */
 .ring.face { background-repeat: no-repeat; background-position: center; background-size: calc(92% * var(--art-k, 1)) auto; background-color: #fff; color: transparent; }
@@ -848,7 +846,6 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
       <span class="pill"><small>解散</small>19:00 天王寺</span>
       <span class="pill"><small>歩く距離</small>約5km</span>
     </div>
-    <p class="howto screen-only" id="howto"><b>つかいかた：</b>下のタブで切りかえます。<b>STAMP</b>や<b>MAP</b>で①〜⑧をタップすると、その場所の写真を撮って記録できます。撮った時刻と、チェックポイントからの距離も一緒に残ります。MAPで「足あとを記録する」をオンにしておくと、あとで歩いた道と写真を地図で振り返れます。ホーム画面に追加すると、アプリのように開けます。</p>
   </header>
 
   <section class="box cream o-map" data-tab="map">
@@ -870,10 +867,8 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
         <button type="button" id="zoom-reset" class="wide" aria-label="全体を表示">全体</button>
       </div>
     </div>
-    <p class="note" style="margin-top:6px;text-align:center">※ 実際の位置関係に合わせて描いています（北が上）。点線は歩く予定の順番です。</p>
     <div class="legend screen-only">
       <span><i class="plan"></i>歩く予定</span><span><i class="walk"></i>歩いた足あと</span><span><i class="dots"></i>写真をつないだ線</span>
-      <span>ドラッグで移動、ピンチや＋−で拡大</span>
     </div>
     <p class="here-info screen-only" id="here-info" hidden></p>
     <div class="summary screen-only">
@@ -896,7 +891,6 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
       <div class="bar" aria-hidden="true"><i id="bar"></i></div>
       <p class="medal" id="medal-msg"></p>
     </div>
-    <p class="note screen-only" style="margin-bottom:14px;text-align:center">枠をタップして写真を撮ると、その写真が台紙に貼られます。パネルと一緒に撮るのがおすすめ。デジタルスタンプを取ったら、同じ画面でチェックしておきましょう。</p>
     <p class="note print-only" style="margin-bottom:14px;text-align:center">スマホで二次元コードを読んだら、丸の中にチェック。8こ集まったらアニメイト天王寺でメダルと交換！</p>
     <div class="stamps" id="stamps"></div>
   </section>
@@ -963,9 +957,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
         <li>スマホの位置情報（GPS）をオンにする</li>
         <li>ブラウザのプライベートモードはオフにする</li>
         <li>メダルの交換は1人1日1回まで</li>
-        <li>遅れたら、通天閣わくわくランド（21:30まで）でも交換できる</li>
         <li>お店では大量注文や場所取りをしない</li>
-        <li>前の日に公式Xで営業時間とメダルの在庫を確認する</li>
       </ul>
     </div>
     <div class="box cream budget-box" data-tab="equip">
@@ -1344,7 +1336,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
     b.style.setProperty('--c', s.color);
     b.style.setProperty('--delay', (i * 0.6) + 's');
     b.style.setProperty('--art-k', s.art || 1);
-    b.innerHTML = '<img class="shot" alt="" decoding="async"><span class="shade"></span><span class="no">AREA ' + s.id + '・' + s.plan + '</span><span class="ring face"><span class="num">' + CIRCLED[s.id] + '</span></span><span class="name"></span><span class="meta screen-only"></span>';
+    b.innerHTML = '<img class="shot" alt="" decoding="async"><span class="shade"></span><span class="no">AREA ' + s.id + '</span><span class="ring face"><span class="num">' + CIRCLED[s.id] + '</span></span><span class="name"></span><span class="meta screen-only"></span>';
     b.querySelector('.name').textContent = s.name;
     b.querySelector('.ring').style.backgroundImage = 'url("fankit/stamp-' + s.id + '.png")';
     b.addEventListener('click', function () { openSheet({ spot: s.id }); });
