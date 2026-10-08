@@ -242,6 +242,13 @@ p { margin: 0; }
 .tabbar button[aria-selected="true"]::before { transform: scale(1); opacity: 1; }
 .tabbar button:active svg { transform: scale(.88); }
 .tabbar button.bump svg { animation: tab-bump .45s cubic-bezier(.3, 1.6, .5, 1); }
+/* スワイプでタブを切りかえたとき、ページがスワイプした向きから入ってくる */
+.swipe-in-right { animation: swipe-in-right .32s cubic-bezier(.2, .8, .3, 1); }
+.swipe-in-left { animation: swipe-in-left .32s cubic-bezier(.2, .8, .3, 1); }
+@keyframes swipe-in-right { from { transform: translateX(48px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes swipe-in-left { from { transform: translateX(-48px); opacity: 0; } to { transform: none; opacity: 1; } }
+/* 入ってくる途中で横スクロールが出ないように（clip はスクロールの仕組みを変えないので、画面のスクロール位置の処理に影響しない） */
+.sheet { overflow-x: clip; overflow-clip-margin: 16px; }
 @keyframes tab-bump {
   0%   { transform: scale(.8) translateY(2px); }
   45%  { transform: scale(1.22) translateY(-5px) rotate(-6deg); }
@@ -1587,6 +1594,46 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
     });
     b.addEventListener('animationend', function () { b.classList.remove('bump'); });
   });
+
+  /* ---------- 左右のスワイプで隣のタブへ ---------- */
+  // 左へ払うと右隣（TOP→STAMP→MAP→EQUIP）、右へ払うと左隣。地図の中・シートや演出の表示中・入力欄の上・画面の端からは反応しない
+  (function () {
+    var start = null;
+    var EDGE = 24;   // 画面の左右の端（iPhoneの「戻る」操作と重ねない）
+    function blocked(target) {
+      if (dlg.open || document.querySelector('.complete-ov') || document.querySelector('.spot-dim.on')) return true;
+      return !!(target.closest && target.closest('#route-svg, input, textarea, select, .zoom, .tabbar'));
+    }
+    document.addEventListener('touchstart', function (e) {
+      if (e.touches.length !== 1) { start = null; return; }
+      var tch = e.touches[0];
+      if (tch.clientX < EDGE || tch.clientX > window.innerWidth - EDGE || blocked(e.target)) { start = null; return; }
+      start = { x: tch.clientX, y: tch.clientY, t: Date.now() };
+    }, { passive: true });
+    document.addEventListener('touchmove', function (e) {
+      if (start && e.touches.length !== 1) start = null;   // 2本指（拡大）になったらやめる
+    }, { passive: true });
+    document.addEventListener('touchend', function (e) {
+      if (!start) return;
+      var tch = e.changedTouches[0], dx = tch.clientX - start.x, dy = tch.clientY - start.y, dt = Date.now() - start.t;
+      start = null;
+      // 素早く（0.6秒以内）、横に60px以上、縦の動きは横の半分まで
+      if (dt > 600 || Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx) * 0.5) return;
+      if (window.getSelection && String(window.getSelection()).length) return;   // 文字を選んでいるとき
+      var i = TABS.indexOf(state.tab || 'top') + (dx < 0 ? 1 : -1);
+      if (i < 0 || i >= TABS.length) return;
+      var name = TABS[i], btn = document.querySelector('.tabbar [data-go="' + name + '"]');
+      if (btn) { btn.classList.remove('bump'); void btn.offsetWidth; btn.classList.add('bump'); }
+      showTab(name);
+      if (reduceMotion) return;
+      // スワイプした向きから、ページがすっと入ってくる
+      var cls = dx < 0 ? 'swipe-in-right' : 'swipe-in-left';
+      Array.prototype.forEach.call(document.querySelectorAll('.sheet > .tab-on, .sheet > .two > .tab-on'), function (n) {
+        n.classList.remove('swipe-in-right', 'swipe-in-left'); void n.offsetWidth; n.classList.add(cls);
+        n.addEventListener('animationend', function f() { n.classList.remove(cls); n.removeEventListener('animationend', f); });
+      });
+    }, { passive: true });
+  })();
 
   /* ---------- 足あとの記録 ---------- */
   var watchId = null;
