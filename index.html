@@ -476,6 +476,94 @@ p { margin: 0; }
 .save-all { margin-top: 22px; padding-top: 18px; border-top: 1px dashed var(--rule); display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
 .warn { background: #fff4e5; border: 2px solid var(--amber); border-radius: .8rem; padding: .7rem 1rem; font-size: .84rem; }
 
+/* ---------- にぎやか演出（音・振動はなし。動きを減らす設定では出さない） ---------- */
+/* 紙吹雪・フラッシュを描く層（シートが開いているときはシートの中に置く） */
+.fx-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 1000; }
+.fx-flash { position: fixed; inset: 0; background: #fff; pointer-events: none; z-index: 1001; animation: fx-flash .5s ease-out forwards; }
+@keyframes fx-flash { 0% { opacity: .95; } 100% { opacity: 0; } }
+/* シートのスタンプ：チェックで「ポン！」と押される */
+.stamp-toggle .dlg-stampart {
+  margin-left: auto; width: 56px; height: 56px; flex: none; border-radius: 50%;
+  background: #fff center / 90% no-repeat; border: 3px dashed var(--c, var(--border)); opacity: .55; filter: grayscale(.6);
+  transition: opacity .2s, filter .2s;
+}
+.stamp-toggle input:checked ~ .dlg-stampart { opacity: 1; filter: none; border-style: solid; box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--c, var(--border)); }
+.dlg-stampart.slam { animation: stamp-slam .55s cubic-bezier(.2, 1.6, .4, 1); }
+@keyframes stamp-slam {
+  0%   { transform: scale(2.6) rotate(-18deg); opacity: 0; }
+  45%  { transform: scale(.82) rotate(6deg); opacity: 1; }
+  70%  { transform: scale(1.12) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+/* 撮った写真：ポラロイドのように落ちてくる */
+.frame img.drop { animation: polaroid-drop .7s cubic-bezier(.25, 1.4, .5, 1); border: 8px solid #fff; border-bottom-width: 26px; box-shadow: 0 8px 18px rgba(0,0,0,.25); box-sizing: border-box; }
+@keyframes polaroid-drop {
+  0%   { transform: translateY(-60px) rotate(-10deg) scale(1.08); opacity: 0; }
+  60%  { transform: translateY(6px) rotate(3deg) scale(1); opacity: 1; }
+  100% { transform: translateY(0) rotate(-1.5deg); }
+}
+.slot.drop { animation: slot-drop .7s cubic-bezier(.25, 1.4, .5, 1); }
+@keyframes slot-drop { 0% { transform: translateY(-30px) rotate(-6deg); opacity: .3; } 60% { transform: translateY(4px) rotate(2deg); opacity: 1; } 100% { transform: none; } }
+/* コンプリート演出 */
+.complete-ov {
+  position: fixed; inset: 0; z-index: 999; display: grid; place-items: center; padding: 24px;
+  background: radial-gradient(circle at 50% 45%, rgba(255,255,255,.35), rgba(38,54,79,.6)); cursor: pointer;
+  animation: ov-in .3s ease-out;
+}
+.complete-ov .card { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.complete-ov img { width: min(62vw, 260px); height: auto; filter: drop-shadow(0 8px 16px rgba(0,0,0,.3)); animation: stamp-slam .8s cubic-bezier(.2, 1.6, .4, 1) .25s both; }
+.complete-ov .banner {
+  font-weight: 900; font-size: clamp(1.6rem, 8vw, 2.4rem); letter-spacing: .06em; color: #fff; padding: .2em .8em; transform: rotate(-3deg);
+  background: linear-gradient(90deg, #ff5f6d, #ffb347, #ffe66d, #7bed9f, #4fc6f5, #8c7bff, #ff7eb3); background-size: 200% 100%;
+  border: 3px solid #fff; border-radius: .6rem; box-shadow: 0 6px 0 rgba(60,67,79,.45); text-shadow: 0 2px 0 rgba(0,0,0,.25);
+  animation: banner-in .6s cubic-bezier(.2, 1.6, .4, 1) both, bar-rainbow 3s linear infinite;
+}
+.complete-ov .sub { color: #fff; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
+@keyframes banner-in { from { transform: scale(0) rotate(-20deg); } to { transform: scale(1) rotate(-3deg); } }
+@keyframes ov-in { from { opacity: 0; } to { opacity: 1; } }
+/* 次はここ！カード（TOP） */
+.next-card { padding-block: 1rem 1.1rem; border-color: var(--orange); }
+.next-card .nc-label { display: inline-block; background: var(--orange); color: #fff; font-weight: 900; font-size: .78rem; letter-spacing: .08em; padding: .1rem .8rem; border-radius: 999px; }
+.next-card .nc-main { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+.next-card .nc-art { width: 64px; height: 64px; flex: none; border-radius: 50%; background: #fff center / 90% no-repeat; border: 3px solid var(--c, var(--border)); animation: stamp-wiggle 2.6s ease-in-out infinite; transform-origin: 50% 85%; }
+.next-card .nc-art.plain { display: grid; place-items: center; font-size: 1.8rem; background: var(--cream); animation: none; }
+.next-card .nc-place { font-weight: 900; font-size: 1.15rem; line-height: 1.4; color: var(--ink); }
+.next-card .nc-time { font-weight: 700; color: var(--title); font-variant-numeric: tabular-nums; }
+.next-card .nc-diff { display: inline-block; margin-left: .3em; font-size: .8rem; font-weight: 900; padding: 0 .55em; border-radius: 999px; color: #fff; background: var(--ok); }
+.next-card .nc-diff.late { background: var(--orange); }
+.next-card .nc-now { margin-top: 8px; font-size: .84rem; color: var(--ink-soft); }
+.next-card .nc-shift { margin-top: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: .8rem; color: var(--ink-soft); }
+.next-card .nc-shift button { font: inherit; font-weight: 700; border: 2px solid var(--border); background: #fff; color: var(--title); border-radius: 999px; padding: 0 .8em; cursor: pointer; }
+.timeline li.now { background: #fff2ea; border-radius: .6rem; padding-inline: 10px; box-shadow: inset 4px 0 0 var(--orange); }
+.timeline li.now time { animation: now-pulse 1.6s ease-in-out infinite; }
+@keyframes now-pulse { 50% { box-shadow: 0 0 0 4px rgba(249,134,86,.35); } }
+/* 夕方・夜（端末の時計で切りかえ） */
+html.sky-dusk body { background: linear-gradient(180deg, #ff8c69 0%, #f9b778 35%, #c8a7d8 70%, #62b0e3 100%) fixed; }
+html.sky-night body {
+  background:
+    radial-gradient(1.5px 1.5px at 20% 12%, #fff 98%, transparent), radial-gradient(1px 1px at 70% 8%, #fff 98%, transparent),
+    radial-gradient(1.5px 1.5px at 85% 30%, #fffbe0 98%, transparent), radial-gradient(1px 1px at 40% 22%, #fff 98%, transparent),
+    radial-gradient(1px 1px at 10% 40%, #fff 98%, transparent), radial-gradient(1.5px 1.5px at 55% 45%, #fff 98%, transparent),
+    linear-gradient(180deg, #141b3d 0%, #26306a 55%, #3c4a8f 100%);
+  background-attachment: fixed;
+}
+html.sky-night .deco .lamp { filter: drop-shadow(0 0 4px #ffd34d) drop-shadow(0 0 10px #ffd34d); }
+html.sky-night .deco .d-harukas .lamp { filter: drop-shadow(0 0 4px #ff6b5b) drop-shadow(0 0 10px #ff6b5b); }
+html.sky-dusk .deco .lamp, html.sky-night .deco .lamp { animation-duration: .8s; }
+/* 地図の「いまここ」 */
+.here-dot .pulse { transform-box: fill-box; transform-origin: center; animation: here-pulse 1.8s ease-out infinite; }
+@keyframes here-pulse { 0% { transform: scale(.6); opacity: .8; } 100% { transform: scale(2.6); opacity: 0; } }
+.here-info { margin-top: 8px; text-align: center; font-weight: 700; color: var(--title); font-size: .86rem; }
+/* おもいでカード */
+.memory-card { margin-top: 14px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.memory-card img { width: min(100%, 360px); border-radius: .8rem; box-shadow: 0 6px 16px rgba(38,54,79,.25); }
+@media (prefers-reduced-motion: reduce) {
+  .dlg-stampart.slam, .frame img.drop, .slot.drop, .complete-ov, .complete-ov img, .complete-ov .banner, .next-card .nc-art, .timeline li.now time, .here-dot .pulse { animation: none !important; }
+}
+@media print {
+  html.sky-dusk body, html.sky-night body { background: #fff !important; }
+  .complete-ov, .fx-canvas, .fx-flash { display: none !important; }
+}
 /* ---------- 写真シート ---------- */
 dialog.photo {
   border: 3px solid var(--border); border-radius: 1rem; padding: 0; width: min(560px, calc(100vw - 24px));
@@ -602,6 +690,9 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
 
 <main class="sheet">
 
+  <!-- 次はここ！（端末の時計とスタンプの進み具合から出す。当日いちばん見るので、TOPの一番上に置く） -->
+  <section class="box next-card screen-only tab-on" data-tab="top" id="next-card" aria-live="polite"></section>
+
   <header class="box cream cover tab-on" data-tab="top">
     <div class="deco" aria-hidden="true">
       <!-- 通天閣 -->
@@ -701,7 +792,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
       <span class="pill"><small>解散</small>19:00 天王寺</span>
       <span class="pill"><small>歩く距離</small>約5km</span>
     </div>
-    <p class="howto screen-only"><b>つかいかた：</b>下のタブで切りかえます。<b>STAMP</b>や<b>MAP</b>で①〜⑧をタップすると、その場所の写真を撮って記録できます。撮った時刻と、チェックポイントからの距離も一緒に残ります。MAPで「足あとを記録する」をオンにしておくと、あとで歩いた道と写真を地図で振り返れます。ホーム画面に追加すると、アプリのように開けます。</p>
+    <p class="howto screen-only" id="howto"><b>つかいかた：</b>下のタブで切りかえます。<b>STAMP</b>や<b>MAP</b>で①〜⑧をタップすると、その場所の写真を撮って記録できます。撮った時刻と、チェックポイントからの距離も一緒に残ります。MAPで「足あとを記録する」をオンにしておくと、あとで歩いた道と写真を地図で振り返れます。ホーム画面に追加すると、アプリのように開けます。</p>
   </header>
 
   <section class="box cream o-map" data-tab="map">
@@ -715,6 +806,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
         <g id="route-memories" class="screen-only"></g>
         <g id="board-nodes"></g>
         <g id="route-photos" class="screen-only"></g>
+        <g id="route-here" class="screen-only"></g>
       </svg>
       <div class="zoom screen-only">
         <button type="button" id="zoom-in" aria-label="拡大">＋</button>
@@ -727,6 +819,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
       <span><i class="plan"></i>歩く予定</span><span><i class="walk"></i>歩いた足あと</span><span><i class="dots"></i>写真をつないだ線</span>
       <span>ドラッグで移動、ピンチや＋−で拡大</span>
     </div>
+    <p class="here-info screen-only" id="here-info" hidden></p>
     <div class="summary screen-only">
       <div><small>歩いた距離</small><b id="sum-dist">—</b></div>
       <div><small>写真</small><b id="sum-photos">0枚</b></div>
@@ -761,6 +854,12 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
     <div class="album" id="album"></div>
     <p class="empty" id="album-empty">まだ寄り道の写真はありません。</p>
     <div class="save-all">
+      <button class="btn" type="button" id="make-card">おもいでカードを作る</button>
+      <p class="note">8か所の写真とスタンプ、歩いた距離を1枚の画像にまとめます。</p>
+      <div class="memory-card" id="memory-card" hidden>
+        <img id="memory-img" alt="おもいでカード（8か所の写真とスタンプのまとめ）">
+        <button class="btn" type="button" id="save-card">このカードを保存・共有</button>
+      </div>
       <button class="btn sub" type="button" id="save-all">写真をまとめて保存</button>
       <p class="note">iPhoneでは、このページで撮った写真は写真アプリに自動では残りません。帰る前にここから保存しておきましょう。</p>
     </div>
@@ -854,7 +953,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
   <div class="dlg-body">
     <div class="frame" id="dlg-frame"></div>
     <dl class="record" id="dlg-record"></dl>
-    <label class="stamp-toggle" id="dlg-stamp-wrap"><input type="checkbox" id="dlg-stamp"><span>デジタルスタンプを取った</span></label>
+    <label class="stamp-toggle" id="dlg-stamp-wrap"><input type="checkbox" id="dlg-stamp"><span>デジタルスタンプを取った</span><span class="dlg-stampart" id="dlg-stampart" aria-hidden="true"></span></label>
     <p class="busy" id="dlg-busy" hidden>写真と位置を記録しています…</p>
     <div class="btn-row" id="dlg-actions"></div>
   </div>
@@ -1018,8 +1117,10 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
         dropUrl(rec.id);
         photos[rec.id] = rec;
         if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {});
+        if (job.spot) progress.newPhoto = job.spot;   // シートを閉じたら、台紙のカードに落ちてくる
         render();
         openSheet(job.spot ? { spot: job.spot } : { id: rec.id });
+        photoFlash();
       });
     }).catch(function () {
       // 寄り道写真のときは、寄り道アルバムの下の警告だけを出す（チェックポイントの画面は開かない）
@@ -1231,10 +1332,11 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
     document.getElementById('album-empty').hidden = list.length > 0;
     document.getElementById('save-all').disabled = Object.keys(photos).length === 0;
     renderMemories();
+    renderNext();
   }
 
   /* ---------- スタンプの進捗バー ---------- */
-  var progress = { shown: 0, pending: null, photos: 0 };
+  var progress = { shown: 0, pending: null, photos: 0, newPhoto: null };
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function medalHtml(n) {
     return (n === 8
@@ -1254,12 +1356,20 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
   }
   // シートを閉じたとき：増えたスタンプの分を、バーが見える所までスクロールしてから伸ばす
   function flushProgress() {
-    if (progress.pending === null) return;
-    var n = progress.pending; progress.pending = null;
     var onStampTab = document.querySelector('.o-stamp').classList.contains('tab-on');
-    if (!onStampTab) { showProgress(n, false); return; }
+    // 撮ったばかりの写真は、台紙のカードに落ちてくる
+    if (progress.newPhoto !== null) {
+      var slot = document.getElementById('stamp-' + progress.newPhoto);
+      progress.newPhoto = null;
+      if (onStampTab && !reduceMotion && slot) { slot.classList.remove('drop'); void slot.offsetWidth; slot.classList.add('drop'); }
+    }
+    if (progress.pending === null) return;
+    var n = progress.pending, prev = progress.shown; progress.pending = null;
+    var complete = n === 8 && prev < 8;
+    if (!onStampTab) { showProgress(n, false); if (complete) setTimeout(showComplete, 300); return; }
     document.querySelector('.progress').scrollIntoView({ block: 'center', behavior: reduceMotion ? 'auto' : 'smooth' });
     setTimeout(function () { showProgress(n, true); }, reduceMotion ? 0 : 450);
+    if (complete) setTimeout(showComplete, reduceMotion ? 300 : 2100);   // バーが満タンで光ったあとに
   }
 
   /* ---------- おもいでマップ ---------- */
@@ -1434,6 +1544,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
   function setStatus(text, on) { trackStatus.textContent = text; trackStatus.classList.toggle('on', !!on); }
   function onPosition(p) {
     var pt = { t: Date.now(), lat: p.coords.latitude, lng: p.coords.longitude, acc: Math.round(p.coords.accuracy) };
+    showHere(pt);   // 誤差が大きくても「いまここ」は出す（足あととしては残さない）
     if (pt.acc > 80) { setStatus('記録中（電波待ち：誤差 ±' + pt.acc + 'm）', true); return; }
     var last = track[track.length - 1];
     if (last && pt.t - last.t < 20000 && distance(last, pt) < 25) return;   // ほとんど動いていない
@@ -1455,6 +1566,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
   }
   function stopTracking() {
     if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+    showHere(null);
   }
   function syncTracking() {
     if (state.tracking && document.visibilityState === 'visible') startTracking();
@@ -1551,7 +1663,13 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
 
     var stampWrap = document.getElementById('dlg-stamp-wrap');
     stampWrap.hidden = !s;
-    if (s) document.getElementById('dlg-stamp').checked = !!state.stamps[s.id];
+    if (s) {
+      document.getElementById('dlg-stamp').checked = !!state.stamps[s.id];
+      stampWrap.style.setProperty('--c', s.color);
+      var art = document.getElementById('dlg-stampart');
+      art.style.backgroundImage = 'url("fankit/stamp-' + s.id + '.png")';
+      art.classList.remove('slam');
+    }
 
     var actions = document.getElementById('dlg-actions');
     actions.textContent = '';
@@ -1597,6 +1715,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
   document.getElementById('dlg-stamp').addEventListener('change', function (e) {
     if (!current || !current.spot) return;
     state.stamps[current.spot] = e.target.checked; save(); render();
+    if (e.target.checked) stampSlam(document.getElementById('dlg-stampart'), spotById[current.spot].color);
   });
   document.getElementById('pick-camera').addEventListener('change', onPicked);
   document.getElementById('pick-album').addEventListener('change', onPicked);
@@ -1652,7 +1771,269 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
   });
   updateTotal();
 
+  /* ---------- にぎやか演出（音・振動はなし） ---------- */
+  var RAINBOW = ['#ff5f6d', '#ffb347', '#ffe66d', '#7bed9f', '#4fc6f5', '#8c7bff', '#ff7eb3'];
+  // 演出を置く場所：シートが開いているときはシートの中（シートは最前面に出るため）
+  function fxHost() { return dlg.open ? dlg : document.body; }
+  // 紙吹雪。burst は (x, y) からはじける、rain は上から降らせる
+  function confetti(opts) {
+    if (reduceMotion) return;
+    var host = fxHost(), cv = document.createElement('canvas'), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var W = window.innerWidth, H = window.innerHeight;
+    cv.className = 'fx-canvas'; cv.width = W * dpr; cv.height = H * dpr; host.appendChild(cv);
+    var g = cv.getContext('2d'); g.scale(dpr, dpr);
+    var parts = [], colors = opts.colors || RAINBOW, t0 = performance.now(), dur = opts.duration || 1400;
+    function add(x, y, vx, vy) {
+      parts.push({ x: x, y: y, vx: vx, vy: vy, r: Math.random() * 6.28, vr: (Math.random() - .5) * .4,
+        w: 6 + Math.random() * 6, h: 3 + Math.random() * 4, c: colors[(Math.random() * colors.length) | 0] });
+    }
+    if (opts.burst) {
+      for (var i = 0; i < (opts.count || 70); i++) {
+        var a = -Math.PI / 2 + (Math.random() - .5) * Math.PI * 1.4, sp = 4 + Math.random() * 7;
+        add(opts.x, opts.y, Math.cos(a) * sp, Math.sin(a) * sp);
+      }
+    }
+    (function frame(now) {
+      var el = now - t0;
+      if (opts.rain && el < dur - 800) for (var k = 0; k < 4; k++) add(Math.random() * W, -10, (Math.random() - .5) * 2, 2 + Math.random() * 3);
+      g.clearRect(0, 0, W, H);
+      parts.forEach(function (p) {
+        p.vy += .18; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+        g.save(); g.translate(p.x, p.y); g.rotate(p.r); g.fillStyle = p.c;
+        g.globalAlpha = Math.max(0, Math.min(1, (dur - el) / 400)); g.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); g.restore();
+      });
+      if (el < dur) requestAnimationFrame(frame); else cv.remove();
+    })(t0);
+  }
+  // スタンプを押したとき：シートのスタンプが「ポン！」と押され、その色の紙吹雪がはじける
+  function stampSlam(el, color) {
+    if (reduceMotion) return;
+    el.classList.remove('slam'); void el.offsetWidth; el.classList.add('slam');
+    setTimeout(function () {
+      var r = el.getBoundingClientRect();
+      confetti({ burst: true, x: r.left + r.width / 2, y: r.top + r.height / 2, count: 60, duration: 1300, colors: [color, '#f5a100', '#ffffff', color, '#f98656'] });
+    }, 220);
+  }
+  // 写真を撮ったとき：白く光り、写真がポラロイドのように落ちてくる
+  function photoFlash() {
+    if (reduceMotion) return;
+    var f = document.createElement('div'); f.className = 'fx-flash'; fxHost().appendChild(f);
+    setTimeout(function () { f.remove(); }, 600);
+    var img = document.querySelector('#dlg-frame img');
+    if (img) { img.classList.remove('drop'); void img.offsetWidth; img.classList.add('drop'); }
+  }
+  // 8こそろったとき
+  function showComplete() {
+    if (document.querySelector('.complete-ov')) return;
+    var ov = document.createElement('div'); ov.className = 'complete-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'コンプリート');
+    ov.innerHTML = '<div class="card"><div class="banner">MISSION COMPLETE!</div><img src="fankit/stamp-complete.png" alt="">' +
+      '<p class="sub">8か所ぜんぶまわったよ！アニメイト天王寺でメダルと交換しよう</p><p class="sub" style="font-size:.8rem;opacity:.85">タップで閉じる</p></div>';
+    document.body.appendChild(ov);
+    var close = function () { ov.remove(); };
+    ov.addEventListener('click', close);
+    setTimeout(close, 8000);
+    confetti({ rain: true, duration: 4500 });
+  }
+
+  /* ---------- 次はここ！（端末の時計とスタンプの進み具合から出す） ---------- */
+  // 予定は「にってい」の表から読む（表を直せば、ここも自動で変わる）
+  var schedule = Array.prototype.map.call(document.querySelectorAll('.timeline li'), function (li) {
+    var hm = li.querySelector('time').textContent.split(':'), tag = li.querySelector('.tag'), place = li.querySelector('.place');
+    var stampId = 0;
+    Object.keys(CIRCLED).forEach(function (k) { if (tag && tag.classList.contains('st') && tag.textContent.indexOf(CIRCLED[k]) >= 0) stampId = +k; });
+    return { li: li, min: (+hm[0]) * 60 + (+hm[1]), stampId: stampId,
+      tag: tag ? tag.textContent : '', place: place.textContent.replace(tag ? tag.textContent : '', '').trim() };
+  });
+  function nowMin() { var d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
+  function hm(m) { m = ((m % 1440) + 1440) % 1440; return Math.floor(m / 60) + ':' + pad(m % 60); }
+  function dur(m) { return m >= 60 ? Math.floor(m / 60) + '時間' + (m % 60 ? (m % 60) + '分' : '') : m + '分'; }
+  function renderNext() {
+    var card = document.getElementById('next-card');
+    var shift = state.shift || 0, nm = nowMin(), T = function (it) { return it.min + shift; };
+    var first = schedule[0], last = schedule[schedule.length - 1];
+    // にっていの「いま」の行を光らせる（始まる前と、解散から2時間たったあとは光らせない）
+    var cur = -1;
+    schedule.forEach(function (it, i) { if (T(it) <= nm) cur = i; });
+    if (nm > T(last) + 120) cur = -1;
+    schedule.forEach(function (it, i) { it.li.classList.toggle('now', i === cur); });
+
+    var next = SPOTS.filter(function (s) { return !state.stamps[s.id]; })[0];
+    var label, art, place, timeLine = '', diffHtml = '';
+    if (next) {
+      var it = schedule.filter(function (x) { return x.stampId === next.id; })[0];
+      var planned = it ? T(it) : null;
+      label = nm < T(first) ? 'まずはここから！' : '次はここ！';
+      art = '<span class="nc-art" style="--c:' + next.color + ';background-image:url(&quot;fankit/stamp-' + next.id + '.png&quot;)"></span>';
+      place = CIRCLED[next.id] + ' ' + next.name;
+      if (planned !== null) {
+        timeLine = '予定 ' + hm(planned);
+        var diff = nm - planned;
+        if (nm < T(first)) diffHtml = '<span class="nc-diff">スタートまで あと' + dur(T(first) - nm) + '</span>';
+        else if (diff <= 0) diffHtml = '<span class="nc-diff">あと' + dur(-diff) + '</span>';
+        else if (diff <= 180) diffHtml = '<span class="nc-diff late">予定より' + dur(diff) + 'おくれ</span>';
+      }
+    } else {
+      var after = schedule.filter(function (x) { return !x.stampId && T(x) >= nm - 30; })[0];
+      if (after && nm <= T(last) + 120) {
+        label = 'コンプリート！ このあとは';
+        art = '<span class="nc-art" style="background-image:url(&quot;fankit/stamp-complete.png&quot;)"></span>';
+        place = after.place; timeLine = '予定 ' + hm(T(after));
+      } else {
+        label = 'コンプリート！';
+        art = '<span class="nc-art" style="background-image:url(&quot;fankit/stamp-complete.png&quot;)"></span>';
+        place = 'おつかれさまでした、先生！';
+      }
+    }
+    var nowLine = cur >= 0 ? 'いまの予定：' + schedule[cur].place + '（' + hm(T(schedule[cur])) + '〜）' : '';
+    card.innerHTML =
+      '<span class="nc-label">' + label + '</span>' +
+      '<div class="nc-main">' + art + '<div><div class="nc-place"></div><div class="nc-time">' + timeLine + diffHtml + '</div></div></div>' +
+      (nowLine ? '<p class="nc-now"></p>' : '') +
+      '<div class="nc-shift"><span>予定のずれ：<b>' + (shift > 0 ? '+' : '') + shift + '分</b></span>' +
+      '<button type="button" data-shift="-5">−5分</button><button type="button" data-shift="5">＋5分</button>' +
+      (shift ? '<button type="button" data-shift="0">もとに戻す</button>' : '') + '</div>' +
+      '<p class="note" style="margin-top:6px">時刻はこのスマホの時計で計算しています。予定がずれたら「＋5分」などで合わせてください。</p>';
+    card.querySelector('.nc-place').textContent = place;
+    if (nowLine) card.querySelector('.nc-now').textContent = nowLine;
+  }
+  document.getElementById('next-card').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-shift]');
+    if (!b) return;
+    var v = +b.getAttribute('data-shift');
+    state.shift = v === 0 ? 0 : Math.max(-120, Math.min(240, (state.shift || 0) + v));
+    save(); renderNext();
+  });
+
+  /* ---------- 夕方・夜（端末の時計で切りかえ。10月の大阪の日の入りは17:40ごろ） ---------- */
+  function applySky() {
+    var nm = nowMin();
+    var mode = nm >= 17 * 60 + 15 && nm < 17 * 60 + 55 ? 'dusk' : (nm >= 17 * 60 + 55 || nm < 5 * 60 ? 'night' : '');
+    document.documentElement.classList.toggle('sky-dusk', mode === 'dusk');
+    document.documentElement.classList.toggle('sky-night', mode === 'night');
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', mode === 'dusk' ? '#ff8c69' : mode === 'night' ? '#141b3d' : '#62b0e3');
+  }
+
+  /* ---------- 地図の「いまここ」（足あとの記録中だけ） ---------- */
+  function showHere(pt) {
+    var layer = document.getElementById('route-here'), info = document.getElementById('here-info');
+    layer.textContent = '';
+    if (!pt) { info.hidden = true; return; }
+    var p = proj(pt.lat, pt.lng), g = el('g', { class: 'here-dot' }, layer);
+    el('circle', { class: 'pulse', cx: p[0], cy: p[1], r: 10, style: 'fill:#0f8ccf;opacity:.5' }, g);
+    el('circle', { cx: p[0], cy: p[1], r: 7, style: 'fill:#0f8ccf;stroke:#ffffff;stroke-width:3' }, g);
+    var next = SPOTS.filter(function (s) { return !state.stamps[s.id]; })[0];
+    var target = next ? { name: CIRCLED[next.id] + ' ' + next.name, lat: next.lat, lng: next.lng } : { name: 'あべのハルカス300', lat: HARUKAS.lat, lng: HARUKAS.lng };
+    info.textContent = '📍いまここ（誤差 ±' + pt.acc + 'm）→ 次の ' + target.name + ' まで ' + fmtDist(distance(pt, target));
+    info.hidden = false;
+  }
+
+  /* ---------- おもいでカード（写真・スタンプ・歩いた距離を1枚の画像に） ---------- */
+  var cardFile = null, cardUrl = null;
+  function loadImg(src) {
+    return new Promise(function (ok) { var im = new Image(); im.onload = function () { ok(im); }; im.onerror = function () { ok(null); }; im.src = src; });
+  }
+  function rr(g, x, y, w, h, r) {
+    g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r);
+    g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath();
+  }
+  function drawCover(g, im, x, y, w, h) {
+    var k = Math.max(w / im.naturalWidth, h / im.naturalHeight), sw = w / k, sh = h / k;
+    g.drawImage(im, (im.naturalWidth - sw) / 2, (im.naturalHeight - sh) / 2, sw, sh, x, y, w, h);
+  }
+  function makeCard() {
+    var btn = document.getElementById('make-card');
+    btn.disabled = true; btn.textContent = 'カードを作っています…';
+    var F = "'Noto Sans JP', 'Hiragino Sans', 'Meiryo', sans-serif";
+    var fontsReady = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('900 40px "Noto Sans JP"'), document.fonts.load('700 20px "Noto Sans JP"')]).catch(function () {}) : Promise.resolve();
+    var imgs = SPOTS.map(function (s) { var rec = cpPhoto(s.id); return loadImg(rec ? urlOf(rec) : 'fankit/stamp-' + s.id + '.png'); });
+    return Promise.all([fontsReady, loadImg('fankit/stamp-complete.png')].concat(imgs)).then(function (res) {
+      var done = res[1], tiles = res.slice(2);
+      var nDone = SPOTS.filter(function (s) { return state.stamps[s.id]; }).length;
+      // 高さは中身に合わせる（コンプリートのときだけ、おめでとうの欄を足す）
+      var W = 1080, H = nDone === 8 ? 1560 : 1340, c = document.createElement('canvas'); c.width = W; c.height = H;
+      var g = c.getContext('2d');
+      // 背景（空色）と白いカード
+      var bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#8fd0f5'); bg.addColorStop(1, '#62b0e3');
+      g.fillStyle = bg; g.fillRect(0, 0, W, H);
+      rr(g, 36, 36, W - 72, H - 72, 40); g.fillStyle = '#ffffff'; g.fill(); g.lineWidth = 8; g.strokeStyle = '#4792bf'; g.stroke();
+      // 見出し
+      g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.font = '700 30px ' + F; var lab = 'ブルアカ5周年スタンプラリー 大阪', lw = g.measureText(lab).width + 48;
+      g.fillStyle = '#f5a100'; g.fillRect((W - lw) / 2, 78, lw, 52); g.fillStyle = '#ffffff'; g.fillText(lab, W / 2, 105);
+      g.font = '900 72px ' + F; g.fillStyle = '#0f8ccf'; g.fillText('大阪さんぽ おもいでカード', W / 2, 192);
+      var dateText = (state.date && state.date.trim()) || (function () { var d = new Date(); return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日'; })();
+      g.font = '700 32px ' + F; g.fillStyle = '#5f6b77'; g.fillText(dateText + (state.name && state.name.trim() ? '　' + state.name.trim() : ''), W / 2, 258);
+      // 8か所のタイル（写真があれば写真、なければスタンプの絵）
+      var tw = 220, th = 293, gap = 24, x0 = (W - (4 * tw + 3 * gap)) / 2, y0 = 310;
+      SPOTS.forEach(function (s, i) {
+        var x = x0 + (i % 4) * (tw + gap), y = y0 + Math.floor(i / 4) * (th + gap), rec = cpPhoto(s.id), im = tiles[i], stamped = !!state.stamps[s.id];
+        g.save(); rr(g, x, y, tw, th, 22); g.clip();
+        if (rec && im) { drawCover(g, im, x, y, tw, th); var sh = g.createLinearGradient(0, y + th * .55, 0, y + th); sh.addColorStop(0, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(0,0,0,.7)'); g.fillStyle = sh; g.fillRect(x, y, tw, th); }
+        else { g.fillStyle = stamped ? '#ffffff' : '#f2f5f8'; g.fillRect(x, y, tw, th); if (im) { g.globalAlpha = stamped ? 1 : .45; g.drawImage(im, x + 25, y + 40, 170, 170); g.globalAlpha = 1; } }
+        g.restore();
+        rr(g, x, y, tw, th, 22); g.lineWidth = stamped ? 8 : 4; g.strokeStyle = s.color; g.stroke();
+        // 番号
+        g.beginPath(); g.arc(x + 34, y + 34, 22, 0, 6.29); g.fillStyle = s.color; g.fill(); g.lineWidth = 4; g.strokeStyle = '#fff'; g.stroke();
+        g.fillStyle = '#ffffff'; g.font = '900 26px ' + F; g.fillText(CIRCLED[s.id], x + 34, y + 36);
+        // 名前
+        // 名前は省略せず、長いときは文字を小さくして枠に収める
+        var fs = 21; g.font = '700 ' + fs + 'px ' + F;
+        while (g.measureText(s.name).width > tw - 16 && fs > 14) { fs--; g.font = '700 ' + fs + 'px ' + F; }
+        g.fillStyle = rec ? '#ffffff' : '#222222'; g.fillText(s.name, x + tw / 2, y + th - 28);
+        if (rec) { g.font = '700 17px ' + F; g.fillText(fmtClock(rec.takenAt) + ' 撮影', x + tw / 2, y + th - 54); }
+        // GET!
+        if (stamped) {
+          g.save(); g.translate(x + tw - 48, y + 32); g.rotate(.2); g.fillStyle = '#f5a100'; g.fillRect(-46, -20, 92, 40);
+          g.fillStyle = '#ffffff'; g.font = '900 26px ' + F; g.fillText('GET!', 0, 2); g.restore();
+        }
+      });
+      // 虹色のバー
+      var n = SPOTS.filter(function (s) { return state.stamps[s.id]; }).length, by = y0 + 2 * th + gap + 50, bx = 100, bw = W - 200;
+      rr(g, bx, by, bw, 46, 23); g.fillStyle = '#e3f0f9'; g.fill();
+      if (n) { g.save(); rr(g, bx, by, bw, 46, 23); g.clip(); var rb = g.createLinearGradient(bx, 0, bx + bw, 0);
+        RAINBOW.forEach(function (col, k) { rb.addColorStop(k / (RAINBOW.length - 1), col); }); g.fillStyle = rb; g.fillRect(bx, by, bw * n / 8, 46); g.restore(); }
+      rr(g, bx, by, bw, 46, 23); g.lineWidth = 5; g.strokeStyle = '#4792bf'; g.stroke();
+      // まとめの数字
+      var list = photoList(), walked = pathLength(track);
+      var times = list.map(function (r) { return r.takenAt; }).concat(track.map(function (p) { return p.t; }));
+      var stats = [['スタンプ', n + ' / 8'], ['写真', list.length + '枚'],
+        ['歩いた距離', walked > 0 ? (walked < 1000 ? Math.round(walked) + 'm' : (walked / 1000).toFixed(1) + 'km') : '—'],
+        ['時間', times.length ? fmtClock(Math.min.apply(null, times)) + '〜' + fmtClock(Math.max.apply(null, times)) : '—']];
+      var sy = by + 90, sw = (bw - 3 * 20) / 4;
+      stats.forEach(function (st, k) {
+        var sx = bx + k * (sw + 20); rr(g, sx, sy, sw, 120, 20); g.fillStyle = '#f6f7dc'; g.fill();
+        g.fillStyle = '#5f6b77'; g.font = '700 24px ' + F; g.fillText(st[0], sx + sw / 2, sy + 34);
+        g.fillStyle = '#0f8ccf'; g.font = '900 ' + (st[1].length > 8 ? 30 : 38) + 'px ' + F; g.fillText(st[1], sx + sw / 2, sy + 82);
+      });
+      // コンプリートなら、おめでとうスタンプ
+      if (n === 8 && done) { g.drawImage(done, W - 300, sy + 140, 200, 200); g.font = '900 52px ' + F; g.fillStyle = '#f98656'; g.textAlign = 'left'; g.fillText('MISSION COMPLETE!', 110, sy + 240); g.textAlign = 'center'; }
+      // クレジット
+      g.font = '500 22px ' + F; g.fillStyle = '#8a97a3';
+      g.fillText('ファンが作った非公式のしおりです。', W / 2, H - 104);
+      g.fillText('スタンプの絵：ブルーアーカイブ ファンキット © NEXON Games & Yostar', W / 2, H - 72);
+      return new Promise(function (ok) { c.toBlob(ok, 'image/jpeg', 0.9); });
+    }).then(function (blob) {
+      var d = new Date();
+      cardFile = new File([blob], 'osaka-sanpo_omoide_' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '.jpg', { type: 'image/jpeg' });
+      if (cardUrl) URL.revokeObjectURL(cardUrl);
+      cardUrl = URL.createObjectURL(blob);
+      document.getElementById('memory-img').src = cardUrl;
+      document.getElementById('memory-card').hidden = false;
+    }).catch(function () {
+      alert('おもいでカードを作れませんでした。もう一度試してください。');
+    }).then(function () { btn.disabled = false; btn.textContent = 'おもいでカードを作り直す'; });
+  }
+  document.getElementById('make-card').addEventListener('click', makeCard);
+  // 保存・共有は、ボタンを押したその場で呼ぶ（iPhoneは、タップの直後でないと共有シートを開けないため）
+  document.getElementById('save-card').addEventListener('click', function () { if (cardFile) shareFiles([cardFile]); });
+
+  // 時計に合わせて、次はここ！カードと空の色を更新する
+  setInterval(function () { renderNext(); applySky(); }, 30000);
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') { renderNext(); applySky(); } });
+
   /* ---------- 起動 ---------- */
+  applySky();
   drawRoute();
   render();
   showTab(TABS.indexOf(location.hash.slice(1)) >= 0 ? location.hash.slice(1) : state.tab, true);
