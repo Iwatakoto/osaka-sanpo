@@ -275,6 +275,11 @@ p { margin: 0; }
 .board .node { cursor: pointer; }
 .board .node:focus-visible { outline: none; }
 .board .node:focus-visible circle.dot { stroke: var(--amber) !important; stroke-width: 5; }
+/* 地図のチェックポイント：取ったスタンプはふりふり揺れる */
+.board .mark { transform-box: fill-box; transform-origin: 50% 85%; }
+.board .mark.stamped { animation: stamp-wiggle 2.6s ease-in-out infinite; animation-delay: var(--delay, 0s); }
+@media (prefers-reduced-motion: reduce) { .board .mark.stamped { animation: none; } }
+@media print { .board .mark.stamped { animation: none; } }
 
 /* ---------- スタンプ ---------- */
 .stamps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
@@ -521,22 +526,54 @@ p { margin: 0; }
 .complete-ov .sub { color: #fff; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
 @keyframes banner-in { from { transform: scale(0) rotate(-20deg); } to { transform: scale(1) rotate(-3deg); } }
 @keyframes ov-in { from { opacity: 0; } to { opacity: 1; } }
-/* 次はここ！カード（TOP） */
-.next-card { padding-block: 1rem 1.1rem; border-color: var(--orange); }
-.next-card .nc-label { display: inline-block; background: var(--orange); color: #fff; font-weight: 900; font-size: .78rem; letter-spacing: .08em; padding: .1rem .8rem; border-radius: 999px; }
-.next-card .nc-main { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
-.next-card .nc-art { width: 64px; height: 64px; flex: none; border-radius: 50%; background: #fff center / 90% no-repeat; border: 3px solid var(--c, var(--border)); animation: stamp-wiggle 2.6s ease-in-out infinite; transform-origin: 50% 85%; }
-.next-card .nc-art.plain { display: grid; place-items: center; font-size: 1.8rem; background: var(--cream); animation: none; }
-.next-card .nc-place { font-weight: 900; font-size: 1.15rem; line-height: 1.4; color: var(--ink); }
-.next-card .nc-time { font-weight: 700; color: var(--title); font-variant-numeric: tabular-nums; }
-.next-card .nc-diff { display: inline-block; margin-left: .3em; font-size: .8rem; font-weight: 900; padding: 0 .55em; border-radius: 999px; color: #fff; background: var(--ok); }
-.next-card .nc-diff.late { background: var(--orange); }
-.next-card .nc-now { margin-top: 8px; font-size: .84rem; color: var(--ink-soft); }
-.next-card .nc-shift { margin-top: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: .8rem; color: var(--ink-soft); }
-.next-card .nc-shift button { font: inherit; font-weight: 700; border: 2px solid var(--border); background: #fff; color: var(--title); border-radius: 999px; padding: 0 .8em; cursor: pointer; }
-.timeline li.now { background: #fff2ea; border-radius: .6rem; padding-inline: 10px; box-shadow: inset 4px 0 0 var(--orange); }
-.timeline li.now time { animation: now-pulse 1.6s ease-in-out infinite; }
+/* にっていの中で、いまどのステップかを示す（端末の時計とスタンプの進み具合から） */
+.sched-status { margin: -6px 0 12px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 10px; font-size: .8rem; color: var(--ink-soft); }
+.sched-status .ss-diff { font-weight: 900; padding: 0 .6em; border-radius: 999px; color: #fff; background: var(--ok); }
+.sched-status .ss-diff.late { background: var(--orange); }
+.sched-status button { font: inherit; font-weight: 700; border: 2px solid var(--border); background: #fff; color: var(--title); border-radius: 999px; padding: 0 .8em; cursor: pointer; }
+.timeline .step-badge {
+  display: inline-block; margin: 0 0 2px; padding: 0 .7em; border-radius: 999px; font-size: .72rem; font-weight: 900; letter-spacing: .04em; line-height: 1.7;
+  color: #fff; background: var(--orange); box-shadow: 0 2px 0 rgba(60,67,79,.3); width: fit-content;
+  animation: badge-bob 1.8s ease-in-out infinite;
+}
+.timeline .step-badge.time { background: var(--title); animation: none; }
+@keyframes badge-bob { 50% { transform: translateY(-2px); } }
+.timeline li.next { background: #fff2ea; border-radius: .6rem; padding-inline: 10px; box-shadow: inset 4px 0 0 var(--orange); }
+.timeline li.next time { animation: now-pulse 1.6s ease-in-out infinite; }
+.timeline li.now:not(.next) { box-shadow: inset 4px 0 0 var(--title); border-radius: .6rem; padding-inline: 10px; }
+.timeline li.done .what, .timeline li.done time { opacity: .55; }   /* スタンプの丸は薄くしない */
+/* チェックポイントの行：時刻の下にスタンプの丸（スタンプ台紙と同じ。取る前は点線、取ったら実線でふりふり） */
+.timeline .tl-col { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
+.timeline .tl-col time { width: 100%; }
+.timeline .tl-stamp {
+  --c: var(--border);
+  width: 52px; height: 52px; border-radius: 50%; padding: 0; cursor: pointer; flex: none;
+  border: 2.5px dashed var(--c); background: #fff center / 92% no-repeat;
+  transform-origin: 50% 85%;
+}
+.timeline .tl-stamp:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+.timeline li.done .tl-stamp {
+  border: 3px solid #fff; box-shadow: 0 0 0 3px var(--c);
+  animation: stamp-wiggle 2.6s ease-in-out infinite; animation-delay: var(--delay, 0s);
+}
+@media (prefers-reduced-motion: reduce) { .timeline li.done .tl-stamp { animation: none; } }
+@media print {
+  .timeline li.done .tl-stamp { animation: none; }
+  .timeline .tl-col { gap: 2px; }
+  .timeline .tl-stamp { width: 24px; height: 24px; border-width: 1.5px; }   /* 紙では小さく（5ページに収める） */
+  /* 「つぎはここ！」などは画面だけ。紙では今どこかの印を出さない */
+  .timeline .step-badge { display: none; }
+  .timeline li.next, .timeline li.now:not(.next) { background: none; box-shadow: none; padding-inline: 4px; }
+  .timeline li.done .what, .timeline li.done time { opacity: 1; }
+  .timeline li.done .tag.st::after { content: none; }
+  .timeline li { padding-block: 5px; }
+}
+.timeline li.done .tag.st::after { content: " ✓"; }
 @keyframes now-pulse { 50% { box-shadow: 0 0 0 4px rgba(249,134,86,.35); } }
+/* 進捗バーの見せ場：まわりをじんわり暗くして、バーだけ明るく残す */
+.spot-dim { position: fixed; inset: 0; z-index: 60; background: rgba(20, 28, 48, .62); opacity: 0; pointer-events: none; transition: opacity .7s ease; }
+.spot-dim.on { opacity: 1; }
+.progress.spot { position: relative; z-index: 61; background: #fff; border-radius: 1rem; box-shadow: 0 0 0 8px #fff, 0 10px 30px rgba(0,0,0,.3); }
 /* 夕方・夜（端末の時計で切りかえ） */
 html.sky-dusk body { background: linear-gradient(180deg, #ff8c69 0%, #f9b778 35%, #c8a7d8 70%, #62b0e3 100%) fixed; }
 html.sky-night body {
@@ -558,7 +595,7 @@ html.sky-dusk .deco .lamp, html.sky-night .deco .lamp { animation-duration: .8s;
 .memory-card { margin-top: 14px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .memory-card img { width: min(100%, 360px); border-radius: .8rem; box-shadow: 0 6px 16px rgba(38,54,79,.25); }
 @media (prefers-reduced-motion: reduce) {
-  .dlg-stampart.slam, .frame img.drop, .slot.drop, .complete-ov, .complete-ov img, .complete-ov .banner, .next-card .nc-art, .timeline li.now time, .here-dot .pulse { animation: none !important; }
+  .dlg-stampart.slam, .frame img.drop, .slot.drop, .complete-ov, .complete-ov img, .complete-ov .banner, .timeline .step-badge, .timeline li.next time, .here-dot .pulse { animation: none !important; }
 }
 @media print {
   html.sky-dusk body, html.sky-night body { background: #fff !important; }
@@ -689,9 +726,6 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
 <body>
 
 <main class="sheet">
-
-  <!-- 次はここ！（端末の時計とスタンプの進み具合から出す。当日いちばん見るので、TOPの一番上に置く） -->
-  <section class="box next-card screen-only tab-on" data-tab="top" id="next-card" aria-live="polite"></section>
 
   <header class="box cream cover tab-on" data-tab="top">
     <div class="deco" aria-hidden="true">
@@ -868,6 +902,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
 
   <section class="box schedule o-sched tab-on" data-tab="top">
     <div class="head"><span class="label">SCHEDULE</span><h2>にってい</h2></div>
+    <div class="sched-status screen-only" id="sched-status" aria-live="polite"></div>
     <ol class="timeline">
       <li class="st"><time>11:00</time><div class="what"><span class="place"><span class="tag st">スタンプ①</span>リトル大阪 ekimoなんば</span><span class="note">駅の中なので、集合してすぐスタート（9:00〜22:30）</span></div></li>
       <li class="st"><time>11:15</time><div class="what"><span class="place"><span class="tag st">スタンプ②</span>わなか なんば店</span><span class="note">開店直後に。コラボたこ焼き（各850円）で腹ごしらえ</span></div></li>
@@ -1256,18 +1291,22 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
       var lb = ROUTE_LABELS[s.id], g = el('g', {}, nodes), p = shown(proj(s.lat, s.lng), lb.d);
       truePoint(g, proj(s.lat, s.lng), lb.d);
       leader(g, p, lb.x, lb.y, lb.side);
-      var c = el('circle', { class: 'dot', cx: p[0], cy: p[1], r: 12, 'stroke-width': 2.5 }, g);
-      var t = el('text', { x: p[0], y: p[1] + 5, 'text-anchor': 'middle', 'font-size': 14, text: s.id ? CIRCLED[s.id] : '★' }, g);
+      // チェックポイントはスタンプの絵を丸く入れる（スタンプ台紙と同じ。取る前は点線、取ったら実線でふりふり）
+      var mark = el('g', { class: 'mark' }, g);
+      var c = el('circle', { class: 'dot', cx: p[0], cy: p[1], r: s.id ? 14 : 12, 'stroke-width': 2.5 }, mark);
+      var t = el('text', { x: p[0], y: p[1] + 5, 'text-anchor': 'middle', 'font-size': 14, text: s.id ? '' : '★' }, mark);
+      if (s.id) el('image', { href: 'fankit/stamp-' + s.id + '.png', x: p[0] - 12.5, y: p[1] - 12.5, width: 25, height: 25, 'clip-path': 'url(#pclip)', preserveAspectRatio: 'xMidYMid slice' }, mark);
       var lab = el('text', { x: lb.x, y: lb.y, 'font-size': 13, 'text-anchor': lb.side === 'L' ? 'end' : 'start', style: 'fill:#222222' }, g);
       lab.textContent = (s.id ? CIRCLED[s.id] + ' ' : '★ ') + s.name + ' ';
       el('tspan', { 'font-size': 11, text: s.plan, style: 'fill:#0f8ccf' }, lab);
       if (s.id) {
-        var cam = el('circle', { cx: p[0] + 10, cy: p[1] - 10, r: 5, 'stroke-width': 1.5, style: 'fill:#0f8ccf;stroke:#ffffff' }, g);
+        var cam = el('circle', { cx: p[0] + 12, cy: p[1] - 12, r: 5, 'stroke-width': 1.5, style: 'fill:#0f8ccf;stroke:#ffffff' }, g);
+        mark.style.setProperty('--delay', ((s.id - 1) * 0.6) + 's');
         g.setAttribute('class', 'node'); g.setAttribute('tabindex', '0'); g.setAttribute('role', 'button');
         g.setAttribute('aria-label', CIRCLED[s.id] + ' ' + s.name + 'の写真と記録');
         g.addEventListener('click', function () { openSheet({ spot: s.id }); });
         g.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); openSheet({ spot: s.id }); } });
-        nodeEls[s.id] = { c: c, t: t, cam: cam };
+        nodeEls[s.id] = { c: c, t: t, cam: cam, mark: mark };
       } else {
         c.style.fill = C.amber; c.style.stroke = C.amber; t.style.fill = C.white;
       }
@@ -1303,9 +1342,11 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
       slot.querySelector('.meta').textContent = rec ? fmtClock(rec.takenAt) + ' 撮影' : '';
       slot.setAttribute('aria-label', (stamped ? 'スタンプ取得済み、' : '') + (rec ? '写真あり、' : '') + CIRCLED[s.id] + ' ' + s.name);
       var n = nodeEls[s.id];
-      n.c.style.fill = stamped ? s.color : C.white;
+      n.c.style.fill = C.white;
       n.c.style.stroke = s.color;
-      n.t.style.fill = stamped ? C.white : s.color;
+      n.c.style.strokeDasharray = stamped ? 'none' : '3 2.6';
+      n.c.style.strokeWidth = stamped ? '3.5' : '2.2';
+      n.mark.classList.toggle('stamped', stamped);
       n.cam.style.display = rec ? '' : 'none';
     });
     // スタンプが増えたときは、シートを閉じるまでバーを伸ばさない（閉じたときに見える所で伸ばす）
@@ -1366,10 +1407,16 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
     if (progress.pending === null) return;
     var n = progress.pending, prev = progress.shown; progress.pending = null;
     var complete = n === 8 && prev < 8;
-    if (!onStampTab) { showProgress(n, false); if (complete) setTimeout(showComplete, 300); return; }
-    document.querySelector('.progress').scrollIntoView({ block: 'center', behavior: reduceMotion ? 'auto' : 'smooth' });
-    setTimeout(function () { showProgress(n, true); }, reduceMotion ? 0 : 450);
-    if (complete) setTimeout(showComplete, reduceMotion ? 300 : 2100);   // バーが満タンで光ったあとに
+    if (!onStampTab || reduceMotion) { showProgress(n, false); if (complete) setTimeout(showComplete, 300); return; }
+    // ① バーが見えるところまでスクロール → ② まわりをじんわり暗く → ③ バーが伸びて枠が光る → ④ 暗さを戻す
+    var prog = document.querySelector('.progress');
+    prog.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    var dim = document.querySelector('.spot-dim');
+    if (!dim) { dim = document.createElement('div'); dim.className = 'spot-dim'; document.body.appendChild(dim); }
+    setTimeout(function () { prog.classList.add('spot'); void dim.offsetWidth; dim.classList.add('on'); }, 600);   // ② 0.7秒かけて暗く
+    setTimeout(function () { showProgress(n, true); }, 1400);                                                        // ③ 伸びる（1.1秒）→ 光る（1.4秒）
+    setTimeout(function () { dim.classList.remove('on'); }, 4000);                                                   // ④ 0.7秒かけて戻す
+    setTimeout(function () { prog.classList.remove('spot'); if (complete) showComplete(); }, 4700);
   }
 
   /* ---------- おもいでマップ ---------- */
@@ -1841,62 +1888,73 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
     var hm = li.querySelector('time').textContent.split(':'), tag = li.querySelector('.tag'), place = li.querySelector('.place');
     var stampId = 0;
     Object.keys(CIRCLED).forEach(function (k) { if (tag && tag.classList.contains('st') && tag.textContent.indexOf(CIRCLED[k]) >= 0) stampId = +k; });
+    // チェックポイントの行は、時刻の下にスタンプの丸を置く（タップでその地点のシートを開く）
+    if (stampId) {
+      var s = spotById[stampId], time = li.querySelector('time'), col = document.createElement('div');
+      col.className = 'tl-col'; li.insertBefore(col, time); col.appendChild(time);
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'tl-stamp';
+      b.style.setProperty('--c', s.color); b.style.setProperty('--delay', ((stampId - 1) * 0.6) + 's');
+      b.style.backgroundImage = 'url("fankit/stamp-' + stampId + '.png")';
+      b.setAttribute('aria-label', CIRCLED[stampId] + ' ' + s.name + 'のスタンプと写真');
+      b.addEventListener('click', function () { openSheet({ spot: stampId }); });
+      col.appendChild(b);
+    }
     return { li: li, min: (+hm[0]) * 60 + (+hm[1]), stampId: stampId,
       tag: tag ? tag.textContent : '', place: place.textContent.replace(tag ? tag.textContent : '', '').trim() };
   });
   function nowMin() { var d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
   function hm(m) { m = ((m % 1440) + 1440) % 1440; return Math.floor(m / 60) + ':' + pad(m % 60); }
   function dur(m) { return m >= 60 ? Math.floor(m / 60) + '時間' + (m % 60 ? (m % 60) + '分' : '') : m + '分'; }
+  // にっていの中に「いまどのステップか」を出す
+  //  ・まだスタンプを取っていない最初のチェックポイントの行に「つぎはここ！」（1つも取っていなければ「まずはここから！」）
+  //  ・スタンプを取った行は ✓ を付けて薄くする
+  //  ・時計の上で今にあたる行が「つぎはここ！」と違うときは、その行に「いまの時間」
+  //  ・見出しの下に「予定 12:20・あと5分（予定より○分おくれ）」と、予定をずらすボタン
   function renderNext() {
-    var card = document.getElementById('next-card');
+    var box = document.getElementById('sched-status');
     var shift = state.shift || 0, nm = nowMin(), T = function (it) { return it.min + shift; };
     var first = schedule[0], last = schedule[schedule.length - 1];
-    // にっていの「いま」の行を光らせる（始まる前と、解散から2時間たったあとは光らせない）
     var cur = -1;
     schedule.forEach(function (it, i) { if (T(it) <= nm) cur = i; });
-    if (nm > T(last) + 120) cur = -1;
-    schedule.forEach(function (it, i) { it.li.classList.toggle('now', i === cur); });
-
+    if (nm > T(last) + 120) cur = -1;   // 解散から2時間たったら出さない
     var next = SPOTS.filter(function (s) { return !state.stamps[s.id]; })[0];
-    var label, art, place, timeLine = '', diffHtml = '';
-    if (next) {
-      var it = schedule.filter(function (x) { return x.stampId === next.id; })[0];
-      var planned = it ? T(it) : null;
-      label = nm < T(first) ? 'まずはここから！' : '次はここ！';
-      art = '<span class="nc-art" style="--c:' + next.color + ';background-image:url(&quot;fankit/stamp-' + next.id + '.png&quot;)"></span>';
-      place = CIRCLED[next.id] + ' ' + next.name;
-      if (planned !== null) {
-        timeLine = '予定 ' + hm(planned);
-        var diff = nm - planned;
-        if (nm < T(first)) diffHtml = '<span class="nc-diff">スタートまで あと' + dur(T(first) - nm) + '</span>';
-        else if (diff <= 0) diffHtml = '<span class="nc-diff">あと' + dur(-diff) + '</span>';
-        else if (diff <= 180) diffHtml = '<span class="nc-diff late">予定より' + dur(diff) + 'おくれ</span>';
-      }
-    } else {
-      var after = schedule.filter(function (x) { return !x.stampId && T(x) >= nm - 30; })[0];
-      if (after && nm <= T(last) + 120) {
-        label = 'コンプリート！ このあとは';
-        art = '<span class="nc-art" style="background-image:url(&quot;fankit/stamp-complete.png&quot;)"></span>';
-        place = after.place; timeLine = '予定 ' + hm(T(after));
-      } else {
-        label = 'コンプリート！';
-        art = '<span class="nc-art" style="background-image:url(&quot;fankit/stamp-complete.png&quot;)"></span>';
-        place = 'おつかれさまでした、先生！';
-      }
+    var anyStamp = SPOTS.some(function (s) { return state.stamps[s.id]; });
+    var nextIdx = -1;
+    if (next) schedule.forEach(function (it, i) { if (it.stampId === next.id) nextIdx = i; });
+    else schedule.forEach(function (it, i) { if (nextIdx < 0 && !it.stampId && T(it) >= nm - 30 && nm <= T(last) + 120) nextIdx = i; });   // 全部取ったあとは次の予定へ
+
+    schedule.forEach(function (it, i) {
+      var li = it.li, old = li.querySelector('.step-badge');
+      if (old) old.remove();
+      li.classList.toggle('done', !!(it.stampId && state.stamps[it.stampId]));
+      li.classList.toggle('next', i === nextIdx);
+      li.classList.toggle('now', i === cur);
+      var text = i === nextIdx ? (next ? (anyStamp ? 'つぎはここ！' : 'まずはここから！') : 'このあとは') : (i === cur ? 'いまの時間' : '');
+      if (!text) return;
+      var b = document.createElement('span');
+      b.className = 'step-badge' + (i === nextIdx ? '' : ' time'); b.textContent = text;
+      li.querySelector('.what').insertBefore(b, li.querySelector('.what').firstChild);
+    });
+
+    var html = '';
+    if (nextIdx >= 0) {
+      var planned = T(schedule[nextIdx]), diff = nm - planned;
+      html += '<span>予定 ' + hm(planned) + '</span>';
+      if (nm < T(first) && !anyStamp) html += '<span class="ss-diff">スタートまで あと' + dur(T(first) - nm) + '</span>';
+      else if (diff <= 0) html += '<span class="ss-diff">あと' + dur(-diff) + '</span>';
+      else if (diff <= 180) html += '<span class="ss-diff late">予定より' + dur(diff) + 'おくれ</span>';
+    } else if (!next) {
+      html += '<span>コンプリート！おつかれさまでした、先生</span>';
     }
-    var nowLine = cur >= 0 ? 'いまの予定：' + schedule[cur].place + '（' + hm(T(schedule[cur])) + '〜）' : '';
-    card.innerHTML =
-      '<span class="nc-label">' + label + '</span>' +
-      '<div class="nc-main">' + art + '<div><div class="nc-place"></div><div class="nc-time">' + timeLine + diffHtml + '</div></div></div>' +
-      (nowLine ? '<p class="nc-now"></p>' : '') +
-      '<div class="nc-shift"><span>予定のずれ：<b>' + (shift > 0 ? '+' : '') + shift + '分</b></span>' +
+    html += '<span>予定のずれ：<b>' + (shift > 0 ? '+' : '') + shift + '分</b></span>' +
       '<button type="button" data-shift="-5">−5分</button><button type="button" data-shift="5">＋5分</button>' +
-      (shift ? '<button type="button" data-shift="0">もとに戻す</button>' : '') + '</div>' +
-      '<p class="note" style="margin-top:6px">時刻はこのスマホの時計で計算しています。予定がずれたら「＋5分」などで合わせてください。</p>';
-    card.querySelector('.nc-place').textContent = place;
-    if (nowLine) card.querySelector('.nc-now').textContent = nowLine;
+      (shift ? '<button type="button" data-shift="0">もとに戻す</button>' : '');
+    box.innerHTML = html;
+    // 時刻の表示もずらした分だけ動かす
+    schedule.forEach(function (it) { it.li.querySelector('time').textContent = hm(T(it)); });
   }
-  document.getElementById('next-card').addEventListener('click', function (e) {
+  document.getElementById('sched-status').addEventListener('click', function (e) {
     var b = e.target.closest('[data-shift]');
     if (!b) return;
     var v = +b.getAttribute('data-shift');
