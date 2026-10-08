@@ -298,7 +298,8 @@ p { margin: 0; }
 .slot:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 .slot .no { font-size: .72rem; font-weight: 700; color: var(--c); }
 /* ---------- ファンキットのスタンプ（写真を撮る前の丸に入れる） ---------- */
-.ring.face { background-repeat: no-repeat; background-position: center; background-size: 92% auto; background-color: #fff; color: transparent; }
+/* --art-k はスタンプの絵の大きさの倍率（文字が丸からはみ出す絵だけ小さくする。SPOTS の art） */
+.ring.face { background-repeat: no-repeat; background-position: center; background-size: calc(92% * var(--art-k, 1)) auto; background-color: #fff; color: transparent; }
 .ring .num { position: relative; }
 .ring.face .num {
   position: absolute; right: -6px; bottom: -6px; width: 26px; height: 26px; border-radius: 50%;
@@ -489,7 +490,7 @@ p { margin: 0; }
 /* シートのスタンプ：チェックで「ポン！」と押される */
 .stamp-toggle .dlg-stampart {
   margin-left: auto; width: 56px; height: 56px; flex: none; border-radius: 50%;
-  background: #fff center / 90% no-repeat; border: 3px dashed var(--c, var(--border)); opacity: .55; filter: grayscale(.6);
+  background: #fff center / calc(90% * var(--art-k, 1)) no-repeat; border: 3px dashed var(--c, var(--border)); opacity: .55; filter: grayscale(.6);
   transition: opacity .2s, filter .2s;
 }
 .stamp-toggle input:checked ~ .dlg-stampart { opacity: 1; filter: none; border-style: solid; box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--c, var(--border)); }
@@ -548,7 +549,7 @@ p { margin: 0; }
 .timeline .tl-stamp {
   --c: var(--border);
   width: 52px; height: 52px; border-radius: 50%; padding: 0; cursor: pointer; flex: none;
-  border: 2.5px dashed var(--c); background: #fff center / 92% no-repeat;
+  border: 2.5px dashed var(--c); background: #fff center / calc(92% * var(--art-k, 1)) no-repeat;
   transform-origin: 50% 85%;
 }
 .timeline .tl-stamp:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
@@ -1011,7 +1012,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
     { id: 4, name: '通天閣わくわくランド',     plan: '13:10', color: '#e0aa12', lat: 34.65239, lng: 135.50639 },
     { id: 5, name: 'SPAWORLD',                plan: '14:30', color: '#3d3f6e', lat: 34.64934, lng: 135.50537 },
     { id: 6, name: 'Caféどうぶつ園の横',       plan: '15:00', color: '#93ba2c', lat: 34.64800, lng: 135.51291 },
-    { id: 7, name: 'アベノラクバス',           plan: '16:15', color: '#2fa465', lat: 34.64547, lng: 135.51375 },
+    { id: 7, name: 'アベノラクバス',           plan: '16:15', color: '#2fa465', lat: 34.64547, lng: 135.51375, art: 0.9 },   // 右の文字が丸で切れるので絵を小さめに
     { id: 8, name: 'アニメイト天王寺',         plan: '16:45', color: '#6a6db8', lat: 34.64695, lng: 135.51231 }
   ];
   var RANGE = 200;          // この距離（m）以内なら「圏内」。地下の施設もあるので広め
@@ -1295,7 +1296,8 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
       var mark = el('g', { class: 'mark' }, g);
       var c = el('circle', { class: 'dot', cx: p[0], cy: p[1], r: s.id ? 14 : 12, 'stroke-width': 2.5 }, mark);
       var t = el('text', { x: p[0], y: p[1] + 5, 'text-anchor': 'middle', 'font-size': 14, text: s.id ? '' : '★' }, mark);
-      if (s.id) el('image', { href: 'fankit/stamp-' + s.id + '.png', x: p[0] - 12.5, y: p[1] - 12.5, width: 25, height: 25, 'clip-path': 'url(#pclip)', preserveAspectRatio: 'xMidYMid slice' }, mark);
+      var aw = 25 * (s.art || 1);   // 文字がはみ出す絵は小さめに
+      if (s.id) el('image', { href: 'fankit/stamp-' + s.id + '.png', x: p[0] - aw / 2, y: p[1] - aw / 2, width: aw, height: aw, 'clip-path': 'url(#pclip)', preserveAspectRatio: 'xMidYMid slice' }, mark);
       var lab = el('text', { x: lb.x, y: lb.y, 'font-size': 13, 'text-anchor': lb.side === 'L' ? 'end' : 'start', style: 'fill:#222222' }, g);
       lab.textContent = (s.id ? CIRCLED[s.id] + ' ' : '★ ') + s.name + ' ';
       el('tspan', { 'font-size': 11, text: s.plan, style: 'fill:#0f8ccf' }, lab);
@@ -1320,6 +1322,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
     b.type = 'button'; b.className = 'slot'; b.id = 'stamp-' + s.id;
     b.style.setProperty('--c', s.color);
     b.style.setProperty('--delay', (i * 0.6) + 's');
+    b.style.setProperty('--art-k', s.art || 1);
     b.innerHTML = '<img class="shot" alt="" decoding="async"><span class="shade"></span><span class="no">' + s.plan + ' ごろ</span><span class="ring face"><span class="num">' + CIRCLED[s.id] + '</span></span><span class="name"></span><span class="meta screen-only"></span>';
     b.querySelector('.name').textContent = s.name;
     b.querySelector('.ring').style.backgroundImage = 'url("fankit/stamp-' + s.id + '.png")';
@@ -1715,6 +1718,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
       stampWrap.style.setProperty('--c', s.color);
       var art = document.getElementById('dlg-stampart');
       art.style.backgroundImage = 'url("fankit/stamp-' + s.id + '.png")';
+      art.style.setProperty('--art-k', s.art || 1);
       art.classList.remove('slam');
     }
 
@@ -1896,6 +1900,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
       b.type = 'button'; b.className = 'tl-stamp';
       b.style.setProperty('--c', s.color); b.style.setProperty('--delay', ((stampId - 1) * 0.6) + 's');
       b.style.backgroundImage = 'url("fankit/stamp-' + stampId + '.png")';
+      b.style.setProperty('--art-k', s.art || 1);
       b.setAttribute('aria-label', CIRCLED[stampId] + ' ' + s.name + 'のスタンプと写真');
       b.addEventListener('click', function () { openSheet({ spot: stampId }); });
       col.appendChild(b);
