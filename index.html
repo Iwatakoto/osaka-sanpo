@@ -410,6 +410,8 @@ p { margin: 0; }
   .slot:hover { transform: none; }
 }
 @media print { .slot.stamped::after { display: none; } }
+.mission-rate { text-align: center; font-weight: 900; color: var(--title); letter-spacing: .06em; margin: 14px 0 0; }
+.mission-rate span { color: var(--orange); font-size: 1.2em; }
 .progress { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: center; }
 /* スタンプの進捗：ガラスの管に、虹色の液体が溜まっていく */
 .bar {
@@ -889,6 +891,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
 
   <section class="box o-stamp" data-tab="stamp">
     <div class="head"><span class="label">MISSION</span><h2>スタンプ台紙</h2></div>
+    <p class="mission-rate screen-only">MISSION 達成率（<span id="rate-n">0</span>/8）</p>
     <div class="progress screen-only">
       <div class="bar" aria-hidden="true"><i id="bar"></i></div>
       <p class="medal" id="medal-msg"></p>
@@ -1410,6 +1413,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
   function showProgress(n, celebrate) {
     var fill = document.getElementById('bar'), bar = fill.parentNode;
     progress.shown = n;
+    document.getElementById('rate-n').textContent = n;   // 達成率の数字は、バーが伸び始めるのと同時に変える
     fill.style.width = (n / 8 * 100) + '%';
     bar.classList.toggle('full', n === 8);
     var msg = document.getElementById('medal-msg');
