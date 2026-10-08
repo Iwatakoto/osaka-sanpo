@@ -182,21 +182,8 @@ p { margin: 0; }
 @media (prefers-reduced-motion: reduce) { .deco .d-leaf { animation: none; transform: rotate(-14deg); } }
 @media print { .deco .d-leaf { animation: none; transform: rotate(-14deg); } }
 @media screen and (max-width: 639px) {
-  .deco {
-    position: static; order: -1; width: 100%; display: flex; justify-content: center; align-items: flex-end; gap: 6px;
-    padding-bottom: 4px; margin-bottom: 2px; border-bottom: 3px solid var(--sky-text);
-  }
-  .deco svg:not(.d-leaf) { position: static; width: auto !important; height: 46px; transform: none !important; flex: 0 1 auto; min-width: 0; }
-  .deco .d-leaf1 { left: 1%; top: 2px; width: 40px; }
-  .deco .d-leaf2 { right: 1%; left: auto; top: 8px; width: 44px; }
-  .deco .d-leaf3 { right: auto; left: 44%; top: -6px; width: 34px; }
-  .deco .d-tower, .deco .d-harukas { height: 62px; }
-  .deco .d-pagoda { height: 54px; }
-  .deco .d-crab, .deco .d-takoyaki { height: 30px; }
-  .deco .d-kushi { height: 40px; }
-  .deco .d-lantern { height: 34px; }
-  .deco .d-crab { order: 1; } .deco .d-lantern { order: 2; } .deco .d-tower { order: 3; } .deco .d-kushi { order: 4; }
-  .deco .d-pagoda { order: 5; } .deco .d-harukas { order: 6; } .deco .d-takoyaki { order: 7; }
+  /* スマホでは表紙の名所イラストと木の葉を出さない（木の葉は文字にかかるため） */
+  .deco { display: none; }
 }
 .label {
   display: inline-block; background: var(--amber); color: #fff; font-weight: 700;
