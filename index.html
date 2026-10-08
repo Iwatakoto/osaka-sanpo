@@ -50,6 +50,44 @@ body {
   padding-block: calc(28px + env(safe-area-inset-top, 0px)) calc(110px + env(safe-area-inset-bottom, 0px));
 }
 img { max-width: 100%; }
+
+/* ---------- ブルアカっぽさ（オマージュ。公式の画面やロゴは使わない） ---------- */
+:root {
+  --tri: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='121' viewBox='0 0 140 121'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.16' stroke-width='1.2'%3E%3Cpath d='M0 121 L35 60.5 L70 121z M70 121 L105 60.5 L140 121z M35 60.5 L70 0 L105 60.5z'/%3E%3C/g%3E%3Cpath d='M105 60.5 L122 31 L139 60.5z' fill='%23ffffff' fill-opacity='.10'/%3E%3C/svg%3E");
+}
+/* 背景：空色に三角形の模様と、斜めの光の帯（帯はゆっくり流れる） */
+body { background: var(--tri) 0 0 / 140px 121px repeat, var(--sky); }
+body::before {
+  content: ""; position: fixed; inset: -20% -60%; z-index: -1; pointer-events: none;
+  background: linear-gradient(115deg, transparent 0 40%, rgba(255,255,255,.20) 40% 47%, transparent 47% 55%, rgba(255,255,255,.10) 55% 57.5%, transparent 57.5% 100%);
+  animation: sky-band 14s ease-in-out infinite alternate;
+}
+@keyframes sky-band { from { transform: translateX(-12%); } to { transform: translateX(12%); } }
+/* 任務表記 */
+.mission-tag { display: inline-flex; align-items: center; gap: 6px; font-size: .74rem; font-weight: 900; letter-spacing: .14em; color: var(--title); }
+/* 案内係のチャット（にっていの中） */
+.guide { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 14px; }
+.guide .g-ava { width: 48px; height: 48px; flex: none; border-radius: 50%; border: 3px solid var(--c, var(--border)); background: #fff center / 92% no-repeat; cursor: pointer; padding: 0; }
+.guide .g-body { min-width: 0; flex: 1; }
+.guide .g-name { font-size: .72rem; font-weight: 900; color: var(--title); letter-spacing: .06em; }
+.guide .g-bubble {
+  position: relative; margin-top: 3px; background: #fff; border: 2px solid var(--border); border-radius: 4px 16px 16px 16px;
+  padding: 8px 12px; font-size: .88rem; font-weight: 500; line-height: 1.6; min-height: 2.6em; cursor: pointer;
+  box-shadow: 0 3px 0 var(--sky-text);
+}
+.guide .g-typing { display: inline-flex; gap: 4px; align-items: center; height: 1.4em; }
+.guide .g-typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--sky); animation: typing 1s ease-in-out infinite; }
+.guide .g-typing i:nth-child(2) { animation-delay: .15s; } .guide .g-typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes typing { 0%, 60%, 100% { transform: translateY(0); opacity: .5; } 30% { transform: translateY(-4px); opacity: 1; } }
+.guide .g-text { animation: g-in .35s ease-out; }
+@keyframes g-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  body::before, .guide .g-typing i, .guide .g-text { animation: none !important; }
+}
+@media print {
+  body::before, .guide { display: none !important; }
+  body { background: #fff; }
+}
 [hidden] { display: none !important; }
 .sheet { max-width: 820px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; position: relative; }
 h1, h2, h3 { margin: 0; text-wrap: balance; }
@@ -821,6 +859,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
         </g>
       </g></svg>
     </div>
+    <span class="mission-tag">SCHALE ／ 大阪出張任務</span>
     <span class="label">ブルアカ5周年スタンプラリー 大阪</span>
     <h1>大阪さんぽの しおり<small>なんば → 新世界 → 天王寺 1日コース</small></h1>
     <p class="subtitle">8か所まわって、記念メダルをもらおう</p>
@@ -876,7 +915,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
   </section>
 
   <section class="box o-stamp" data-tab="stamp">
-    <div class="head"><span class="label">STAMP</span><h2>スタンプ台紙</h2></div>
+    <div class="head"><span class="label">MISSION</span><h2>スタンプ台紙</h2></div>
     <p class="note screen-only" style="margin-bottom:14px;text-align:center">枠をタップして写真を撮ると、その写真が台紙に貼られます。パネルと一緒に撮るのがおすすめ。デジタルスタンプを取ったら、同じ画面でチェックしておきましょう。</p>
     <p class="note print-only" style="margin-bottom:14px;text-align:center">スマホで二次元コードを読んだら、丸の中にチェック。8こ集まったらアニメイト天王寺でメダルと交換！</p>
     <div class="stamps" id="stamps"></div>
@@ -911,6 +950,13 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
   <section class="box schedule o-sched tab-on" data-tab="top">
     <div class="head"><span class="label">SCHEDULE</span><h2>にってい</h2></div>
     <div class="sched-status screen-only" id="sched-status" aria-live="polite"></div>
+    <div class="guide screen-only" id="guide" aria-live="polite">
+      <button type="button" class="g-ava" id="g-ava" aria-label="案内係のメッセージをもう一度"></button>
+      <div class="g-body">
+        <div class="g-name">シャーレ案内係</div>
+        <div class="g-bubble" id="g-bubble"></div>
+      </div>
+    </div>
     <ol class="timeline">
       <li class="st"><time>11:00</time><div class="what"><span class="place"><span class="tag st">スタンプ①</span>リトル大阪 ekimoなんば</span><span class="note">駅の中なので、集合してすぐスタート（9:00〜22:30）</span></div></li>
       <li class="st"><time>11:15</time><div class="what"><span class="place"><span class="tag st">スタンプ②</span>わなか なんば店</span><span class="note">開店直後に。コラボたこ焼き（各850円）で腹ごしらえ</span></div></li>
@@ -1330,7 +1376,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
     b.style.setProperty('--c', s.color);
     b.style.setProperty('--delay', (i * 0.6) + 's');
     b.style.setProperty('--art-k', s.art || 1);
-    b.innerHTML = '<img class="shot" alt="" decoding="async"><span class="shade"></span><span class="no">' + s.plan + ' ごろ</span><span class="ring face"><span class="num">' + CIRCLED[s.id] + '</span></span><span class="name"></span><span class="meta screen-only"></span>';
+    b.innerHTML = '<img class="shot" alt="" decoding="async"><span class="shade"></span><span class="no">AREA ' + s.id + '・' + s.plan + '</span><span class="ring face"><span class="num">' + CIRCLED[s.id] + '</span></span><span class="name"></span><span class="meta screen-only"></span>';
     b.querySelector('.name').textContent = s.name;
     b.querySelector('.ring').style.backgroundImage = 'url("fankit/stamp-' + s.id + '.png")';
     b.addEventListener('click', function () { openSheet({ spot: s.id }); });
@@ -1391,8 +1437,8 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function medalHtml(n) {
     return (n === 8
-      ? '<img src="fankit/stamp-complete.png" alt=""><strong>コンプリート！</strong> アニメイト天王寺でメダルと交換しよう'
-      : 'メダルまで あと <strong>' + (8 - n) + '</strong> こ') + '<span class="note">（写真 ' + progress.photos + '/8）</span>';
+      ? '<img src="fankit/stamp-complete.png" alt=""><strong>任務完了！</strong> 報酬の記念メダルはアニメイト天王寺で'
+      : '報酬：記念メダルまで あと <strong>' + (8 - n) + '</strong> エリア') + '<span class="note">（写真 ' + progress.photos + '/8）</span>';
   }
   // n こ分までバーを伸ばす。celebrate のときは、伸びきったあとに光らせる
   function showProgress(n, celebrate) {
@@ -1925,7 +1971,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
     if (document.querySelector('.complete-ov')) return;
     var ov = document.createElement('div'); ov.className = 'complete-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'コンプリート');
     ov.innerHTML = '<div class="card"><div class="banner">MISSION COMPLETE!</div><img src="fankit/stamp-complete.png" alt="">' +
-      '<p class="sub">8か所ぜんぶまわったよ！アニメイト天王寺でメダルと交換しよう</p><p class="sub" style="font-size:.8rem;opacity:.85">タップで閉じる</p></div>';
+      '<p class="sub">全8エリアの任務完了！報酬の記念メダルは、アニメイト天王寺で受け取ろう</p><p class="sub" style="font-size:.8rem;opacity:.85">タップで閉じる</p></div>';
     document.body.appendChild(ov);
     var close = function () { ov.remove(); };
     ov.addEventListener('click', close);
@@ -2005,7 +2051,53 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
     box.innerHTML = html;
     // 時刻の表示もずらした分だけ動かす
     schedule.forEach(function (it) { it.li.querySelector('time').textContent = hm(T(it)); });
+    // 案内係のひとこと
+    var late = nextIdx >= 0 && !(nm < T(first) && !anyStamp) ? nm - T(schedule[nextIdx]) : 0;
+    renderGuide(next, anyStamp, late, nextIdx >= 0 ? schedule[nextIdx] : null);
   }
+
+  /* ---------- 案内係のチャット（セリフは自作。キャラクター名は出さない） ---------- */
+  var GUIDE = {
+    first: '先生、おはようございます！まずはなんば駅の地下、リトル大阪からスタートです。',
+    1: '先生、リトル大阪はなんば駅の地下（御堂筋線の改札の近く）ですよ。集合したら任務開始です！',
+    2: '次はわなかのたこ焼きです！開店直後なら並ばずに買えるかも。熱いので気をつけてくださいね。',
+    3: 'アニメイト大阪日本橋へ向かいましょう。道頓堀から歩いて10分くらいです。',
+    4: '通天閣の地下、わくわくランドです！てっぺんの旗も見上げてみてください。',
+    5: 'SPAWORLDのパネルは入館口の前にあるそうです。見つからなければフロントで聞いてみましょう。',
+    6: 'Caféどうぶつ園の横で、コラボドリンクを飲んでひと休みしましょう。18時までですよ。',
+    7: 'アベノラクバスはあべのHoopの4階です。グッズを買うならここですね。',
+    8: '最後はアニメイト天王寺！8こそろったら、報酬の記念メダルを受け取りましょう。',
+    after: '全エリアの任務完了です、先生！このあとはハルカスから夕焼けを見に行きましょう。',
+    done: 'おつかれさまでした、先生！今日の写真は「おもいでカード」にまとめておきましょう。'
+  };
+  var guideShown = null, guideTimer = null;
+  function renderGuide(next, anyStamp, late, item) {
+    var msg, ava;
+    if (next) {
+      msg = !anyStamp && next.id === 1 ? GUIDE.first : GUIDE[next.id];
+      if (late > 15 && late <= 180) msg += ' 予定より少し遅れています。急ぎすぎず、でも少しだけ急ぎましょう！';
+      ava = { img: 'fankit/stamp-' + next.id + '.png', c: next.color, k: next.art || 1 };
+    } else {
+      msg = item ? GUIDE.after : GUIDE.done;
+      ava = { img: 'fankit/stamp-complete.png', c: C.amber, k: 1 };
+    }
+    var a = document.getElementById('g-ava');
+    a.style.backgroundImage = 'url("' + ava.img + '")'; a.style.setProperty('--c', ava.c); a.style.backgroundSize = (92 * ava.k) + '%';
+    if (guideShown !== msg) typeGuide(msg);
+  }
+  // 「…」と入力中を見せてから、ひとことを出す
+  function typeGuide(msg) {
+    var b = document.getElementById('g-bubble');
+    guideShown = msg; clearTimeout(guideTimer);
+    var put = function () { b.innerHTML = '<span class="g-text"></span>'; b.firstChild.textContent = msg; };
+    if (reduceMotion) { put(); return; }
+    b.innerHTML = '<span class="g-typing" aria-label="入力中"><i></i><i></i><i></i></span>';
+    guideTimer = setTimeout(put, 900);
+  }
+  ['g-ava', 'g-bubble'].forEach(function (id) {
+    document.getElementById(id).addEventListener('click', function () { if (guideShown) typeGuide(guideShown); });
+  });
+
   document.getElementById('sched-status').addEventListener('click', function (e) {
     var b = e.target.closest('[data-shift]');
     if (!b) return;
