@@ -150,22 +150,9 @@ p { margin: 0; }
   .deco .d-takoyaki .steam path { animation: none; opacity: .7; }
 }
 /* 地図の空きスペースの名所イラスト（地図と一緒に拡大・移動する） */
-.map-deco { transform-box: fill-box; pointer-events: none; }
-.map-deco.md-lantern { transform-origin: 50% 0; animation: m-swing 2.2s ease-in-out infinite; }
-.map-deco.md-crab { animation: m-crab 2.8s ease-in-out infinite; }
-.map-deco.md-kushi { transform-origin: 50% 100%; animation: m-wiggle 1.6s ease-in-out infinite; }
-.map-deco.md-tower, .map-deco.md-pagoda { transform-origin: 50% 100%; animation: m-sway 3.6s ease-in-out infinite; }
-.map-deco.md-pagoda { animation-delay: -1.8s; }
-.map-deco.md-takoyaki { animation: m-hop 1.8s ease-in-out infinite; }
-.map-deco.md-leaf { transform-origin: center; animation: leaf-float 5s ease-in-out infinite; }
-.map-deco.md-leaf2 { animation-duration: 6.2s; animation-direction: reverse; }
-.map-deco .lamp { transform-box: fill-box; transform-origin: center; animation: m-blink 1.1s ease-in-out infinite; }
-.map-deco .sparkle { animation: m-sparkle 1.8s ease-in-out infinite; }
-.map-deco .steam path { animation: m-steam 1.8s ease-out infinite; opacity: 0; }
-.map-deco .steam .s2 { animation-delay: -.6s; }
-.map-deco .steam .s3 { animation-delay: -1.2s; }
-@media (prefers-reduced-motion: reduce) { .map-deco, .map-deco * { animation: none !important; } .map-deco .steam path { opacity: .7; } }
-@media print { .map-deco, .map-deco * { animation: none !important; } .map-deco .steam path { opacity: .7; } }
+/* 地図の空きの飾り：スタンプ帳（まだ取っていないものは白黒で薄く）、区名 */
+.book-item { transition: filter .4s, opacity .4s; }
+.book-item.todo { filter: grayscale(1); opacity: .42; }
 /* 秋風に舞う木の葉（イベント名「秋風ふわり」から） */
 .deco .d-leaf { width: 58px; filter: none; animation: leaf-float 5s ease-in-out infinite; }
 .deco .d-leaf1 { left: 16%; top: 38%; }
@@ -1269,24 +1256,32 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
     var ex = side === 'L' ? lx + 6 : lx - 6;
     el('polyline', { points: p[0].toFixed(1) + ',' + p[1].toFixed(1) + ' ' + ex + ',' + (ly - 4), fill: 'none', style: 'stroke:#4792bf;stroke-width:1;opacity:.6' }, g);
   }
-  // 地図の空き（ルートが通らない北東と南西）に置く名所イラスト。[表紙の飾りのクラス, x, y, 幅]（図の座標）
-  var MAP_DECO = [
-    ['d-lantern', 522, 112, 32], ['d-leaf1', 600, 118, 38], ['d-pagoda', 596, 196, 52], ['d-takoyaki', 492, 262, 88],
-    ['d-tower', 42, 268, 48], ['d-leaf2', 112, 276, 34], ['d-kushi', 190, 272, 20], ['d-crab', 104, 336, 78]
-  ];
-  function drawMapDeco() {
+  // 地図の空き（ルートが通らない北東と南西）に置く飾り。スタンプ帳（取ったものは色つき、まだは白黒）と区名
+  var BOOK_X = [44, 86, 128, 170];
+  var BOOK_Y = [254, 294];
+  var AREA_NAMES = [['中央区', 500, 300], ['浪速区', 250, 330], ['天王寺区', 400, 572], ['阿倍野区', 606, 580]];
+  function drawMapFill() {
     var layer = document.getElementById('route-deco');
-    MAP_DECO.forEach(function (d) {
-      var src = document.querySelector('.cover .deco .' + d[0]);
-      if (!src) return;
-      var vb = src.getAttribute('viewBox').split(/\s+/).map(Number);
-      var g = el('g', { class: 'map-deco md-' + d[0].replace(/^d-/, '').replace(/[0-9]$/, '') + (d[0] === 'd-leaf2' ? ' md-leaf2' : '') }, layer);
-      var sv = el('svg', { x: d[1], y: d[2], width: d[3], height: (d[3] * vb[3] / vb[2]).toFixed(1), viewBox: vb.join(' '), overflow: 'visible' }, g);
-      sv.innerHTML = src.innerHTML;
+    el('text', { x: BOOK_X[0] - 17, y: 350, 'font-size': 11, text: 'スタンプ帳', style: 'fill:#0f8ccf;font-weight:700' }, layer);
+    SPOTS.forEach(function (s, i) {
+      var cx = BOOK_X[i % 4], cy = BOOK_Y[Math.floor(i / 4)] + 18;
+      var g = el('g', { class: 'book-item', 'data-id': s.id }, layer);
+      el('circle', { cx: cx, cy: cy, r: 17, style: 'fill:#ffffff;stroke:' + s.color + ';stroke-width:2.5' }, g);
+      el('image', { href: 'fankit/stamp-' + s.id + '.png', x: cx - 15, y: cy - 15, width: 30, height: 30, 'clip-path': 'url(#pclip)', preserveAspectRatio: 'xMidYMid slice' }, g);
+    });
+    AREA_NAMES.forEach(function (a) {
+      el('text', { x: a[1], y: a[2], 'font-size': 12, 'font-weight': 700, text: a[0], style: 'fill:#9aa6b2;letter-spacing:.12em' }, layer);
+    });
+  }
+  function paintBook() {
+    SPOTS.forEach(function (s) {
+      var g = document.querySelector('#route-deco .book-item[data-id="' + s.id + '"]');
+      if (g) g.classList.toggle('todo', !state.stamps[s.id]);
     });
   }
   function drawRoute() {
-    drawMapDeco();
+    drawMapFill();
+    paintBook();
     var base = document.getElementById('route-base');
     // 天王寺公園・道頓堀川・通り
     var a = proj(34.6538, 135.5068), b = proj(34.6480, 135.5142);
@@ -1392,6 +1387,7 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
       n.mark.classList.toggle('stamped', stamped);
       n.cam.style.display = rec ? '' : 'none';
     });
+    paintBook();
     // スタンプが増えたときは、シートを閉じるまでバーを伸ばさない（閉じたときに見える所で伸ばす）
     progress.photos = nPhoto;
     if (dlg.open && nStamp > progress.shown) progress.pending = nStamp;
