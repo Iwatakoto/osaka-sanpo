@@ -1426,6 +1426,8 @@ table.money { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
     if (progress.pending === null) return;
     var n = progress.pending, prev = progress.shown; progress.pending = null;
     var complete = n === 8 && prev < 8;
+    // TOPやMAPから付けたときも、STAMPタブへ移ってから同じ動き（バーの増加・光り）を見せる
+    if (!onStampTab && !reduceMotion) { showTab('stamp', true); onStampTab = true; }
     if (!onStampTab || reduceMotion) { showProgress(n, false); if (complete) setTimeout(showComplete, 300); return; }
     // ① バーが見えるところまでスクロール → ② まわりをじんわり暗く → ③ バーが伸びて枠が光る → ④ 暗さを戻す
     var prog = document.querySelector('.progress');

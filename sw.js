@@ -1,6 +1,6 @@
 // 大阪さんぽのしおり：オフラインでも開けるようにするための Service Worker
 // index.html などを更新したら CACHE の番号を上げる
-const CACHE = 'osaka-sanpo-v45';
+const CACHE = 'osaka-sanpo-v46';
 const ASSETS = [
   './',
   './index.html',
