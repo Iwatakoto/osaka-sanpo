@@ -2,7 +2,7 @@
 // index.html などを更新したら CACHE の番号を上げる
 // 名前は PREFIX で始める。同じ iwatakoto.github.io の下にあるほかのアプリのキャッシュと区別するため
 const PREFIX = 'osaka-sanpo-';
-const CACHE = PREFIX + 'v49';
+const CACHE = PREFIX + 'v50';
 const ASSETS = [
   './',
   './index.html',
